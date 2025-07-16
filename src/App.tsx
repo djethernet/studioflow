@@ -3,14 +3,12 @@ import DiagramCanvas from './components/DiagramCanvas'
 function App() {
   return (
     <div className="App">
-      <h1>StudioFlow MVP</h1>
       <DiagramCanvas />
     </div>
   )
 }
 
 export default App
-
 
 //import { useState } from 'react'
 //import reactLogo from './assets/react.svg'
