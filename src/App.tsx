@@ -1,7 +1,9 @@
+import { LibraryPanel } from './components/LibraryPanel'
+
 function App() {
   return (
     <div className="App">
-      hello
+      <LibraryPanel />
     </div>
   )
 }
