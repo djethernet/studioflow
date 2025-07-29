@@ -1,0 +1,66 @@
+Design Doc
+
+StudioFlow is a web-based tool for visually designing audio studios, aimed at music producers, engineers, and hobbyists. It provides a drag-and-drop interface for arranging physical audio gear (like racks, mixers, desks, and speakers) in a 2D room layout. Inspired by tools like Figma, IKEA's room planner, and Reason’s visual cabling, StudioFlow lets users build and connect their studio setups without needing technical drawing skills.
+The app focuses on hardware planning, not software plugins or modular synths, keeping things simple and beginner-friendly. Users choose from a library of pre-defined gear blocks and link them with virtual cables, helping them visualize layouts and check connections.
+Key features include:
+A user-friendly layout editor with snap-to-grid and gear libraries
+
+
+Visual cable routing between inputs/outputs
+
+
+Error-checking and “auto-connect” suggestions to avoid mistakes
+
+
+A playful, creative interface – not a technical CAD tool
+
+
+The goal is to make studio planning feel intuitive and fun, while reducing real-world setup errors. StudioFlow helps users experiment, plan effectively, and design their dream studio confidently before touching any physical gear.
+#Frameworks 
+React
+JS
+vite
+Fabric.js
+Threejs
+Zustand
+
+# Design Principles
+Typescript
+
+#Organization
+The objects should be stored in zustand, later it will save that to a db, but not now.
+There’s really only one main object of interest the Library Items. The app makes instances of these so the user can place them. They are saved in zustand.
+LibraryItem
+{
+id:number
+Name: string
+Dimensions { width,height}
+Connections [] { name:
+		   direction: { enum [input,output] }
+		   Group: //this is if it’s an insert jack in can be paired not used in early version
+		 }
+Position {X:number ,Y:number}  // in meters
+Rotation degrees
+}
+
+Components go in the /components folder
+Zustand store /store
+
+
+Phase 1 – MVP Core Features (Simplified Steps)
+Goal: Build a local, single-user tool that allows basic studio layout and wiring design with essential error-checking and a guided user experience.
+
+1. 2D Layout Canvas
+Create a drag-and-drop canvas for placing studio gear in a top-down room view.
+Gear items are pre-sized (e.g. racks, desks, monitors) and snap to grid.
+Users can move, rotate, and align gear easily.
+Canvas uses known gear blocks only – no freehand drawing or CAD skills needed
+2. Preloaded Gear Library
+Include a searchable library of common studio gear with metadata:
+Physical dimensions
+Input/output ports
+Type/category and icon
+Users drag items from the library into the canvas.
+Only essential gear types are supported in MVP (e.g., monitors, mixers, synths, computers, etc.).
+Use generic placeholders for complex or niche devices.
+The library is a floating window to the right. It’s split horizontally. In the bottom it shows properties for the selected item in the library. (for now just text with the name, number of inputs and outputs and size) 
