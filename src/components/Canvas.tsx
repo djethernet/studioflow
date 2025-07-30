@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import { useDiagramStore } from '../stores/diagramStore'
 import type { CanvasItem } from '../stores/diagramStore'
 
@@ -81,28 +81,38 @@ export function Canvas() {
     draggedItem.current = null
   }, [])
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
+
+  useEffect(() => {
+    const svg = svgRef.current
+    if (!svg) return
+
+    const handleWheelNative = (e: WheelEvent) => {
+      e.preventDefault()
+      
+      const rect = svg.getBoundingClientRect()
+      const mouseX = e.clientX - rect.left
+      const mouseY = e.clientY - rect.top
+
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1
+      const newZoom = Math.max(10, Math.min(200, viewport.zoom * zoomFactor))
+
+      // Zoom towards mouse position
+      const zoomRatio = newZoom / viewport.zoom
+      const newOffsetX = mouseX - (mouseX - viewport.offsetX) * zoomRatio
+      const newOffsetY = mouseY - (mouseY - viewport.offsetY) * zoomRatio
+
+      updateViewport({
+        zoom: newZoom,
+        offsetX: newOffsetX,
+        offsetY: newOffsetY
+      })
+    }
+
+    svg.addEventListener('wheel', handleWheelNative, { passive: false })
     
-    const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect) return
-
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1
-    const newZoom = Math.max(10, Math.min(200, viewport.zoom * zoomFactor))
-
-    // Zoom towards mouse position
-    const zoomRatio = newZoom / viewport.zoom
-    const newOffsetX = mouseX - (mouseX - viewport.offsetX) * zoomRatio
-    const newOffsetY = mouseY - (mouseY - viewport.offsetY) * zoomRatio
-
-    updateViewport({
-      zoom: newZoom,
-      offsetX: newOffsetX,
-      offsetY: newOffsetY
-    })
+    return () => {
+      svg.removeEventListener('wheel', handleWheelNative)
+    }
   }, [viewport, updateViewport])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -235,7 +245,6 @@ export function Canvas() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
