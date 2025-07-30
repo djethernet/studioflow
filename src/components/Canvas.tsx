@@ -174,11 +174,12 @@ export function Canvas() {
 
   const renderGrid = () => {
     const gridSize = 0.5 // 0.5m grid
+    const rect = svgRef.current?.getBoundingClientRect()
     const viewBox = {
       left: -viewport.offsetX / viewport.zoom,
       top: -viewport.offsetY / viewport.zoom,
-      width: 800 / viewport.zoom,
-      height: 600 / viewport.zoom
+      width: (rect?.width || 800) / viewport.zoom,
+      height: (rect?.height || 600) / viewport.zoom
     }
 
     const startX = Math.floor(viewBox.left / gridSize) * gridSize
@@ -220,8 +221,8 @@ export function Canvas() {
   }
 
   const rect = svgRef.current?.getBoundingClientRect()
-  const viewBoxWidth = (rect?.width || 800) / viewport.zoom
-  const viewBoxHeight = (rect?.height || 600) / viewport.zoom
+  const viewBoxWidth = (rect?.width ) / viewport.zoom
+  const viewBoxHeight = (rect?.height ) / viewport.zoom
 
   return (
     <div style={{ flex: 1, overflow: 'hidden', cursor: isDragging.current ? 'grabbing' : 'grab' }}>
