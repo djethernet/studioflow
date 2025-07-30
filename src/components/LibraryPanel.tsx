@@ -17,6 +17,11 @@ export function LibraryPanel() {
     setSelectedItem(item)
   }
 
+  const handleDragStart = (e: React.DragEvent, item: LibraryItem) => {
+    e.dataTransfer.setData('application/json', JSON.stringify(item))
+    e.dataTransfer.effectAllowed = 'copy'
+  }
+
   return (
     <Paper shadow="sm" p="md" h="100vh" w={300} style={{ display: 'flex', flexDirection: 'column' }}>
       <Stack gap="md" style={{ flex: 1 }}>
@@ -36,8 +41,10 @@ export function LibraryPanel() {
                 key={item.id}
                 p="sm"
                 bg={selectedItem?.id === item.id ? 'blue.1' : 'gray.0'}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: 'grab' }}
                 onClick={() => handleItemClick(item)}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
               >
                 <Group gap="sm">
                   <Text size="lg">{item.icon || '🎛️'}</Text>
