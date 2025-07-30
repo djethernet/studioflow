@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Overview
+**IMPORTANT**: Always read `/PROJECT_STATUS.md` first to understand the current state of the StudioFlow project. This file contains:
+- Complete project vision and goals
+- Current tech stack and architecture
+- Completed features and implementation status
+- Sample data and type definitions
+- Next phase goals and development roadmap
+
+StudioFlow is a web-based tool for visually designing audio studios with drag-and-drop functionality for arranging physical audio gear in 2D room layouts.
+
 ## Development Commands
 
 ### Core Commands
