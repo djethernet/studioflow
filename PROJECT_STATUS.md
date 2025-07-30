@@ -118,10 +118,21 @@ Currently includes 4 sample gear items:
 - `src/stores/libraryStore.ts` - Library state management
 - `src/components/LibraryPanel.tsx` - Current UI implementation
 
-## Recent Commits
-- `5e04e1c` - Add Mantine UI library and update LibraryPanel styling
-- `7266cbb` - Implement library panel with gear selection and search
-- `d20bf03` - Move plan to visible directory and add diagram store
+## Recent Development Progress
+
+### Latest Session Improvements
+- **Canvas Layout Fix**: Resolved full-width display issue by removing body flex centering
+- **Dynamic Grid Rendering**: Updated grid to use actual SVG dimensions instead of hardcoded 800x600
+- **Wheel Event Fix**: Fixed passive listener warning by using native event listener with preventDefault
+- **WSL Development**: Added Vite polling for proper file watching in WSL environment
+- **Documentation**: Updated CLAUDE.md to reference PROJECT_STATUS.md for better context
+
+### Recent Commits
+- `0036cf2` - Fix wheel event passive listener warning in Canvas
+- `eb7b387` - Fix canvas width and grid rendering issues  
+- `5f27506` - Enable polling in Vite config for WSL file watching
+- `42ff746` - Update CLAUDE.md to reference PROJECT_STATUS.md
+- `4329e03` - Update PROJECT_STATUS.md with Phase 1 completion
 
 ## Ready for Next Steps
 The foundation is solid. Next logical steps would be:
