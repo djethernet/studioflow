@@ -5,11 +5,12 @@ StudioFlow is a web-based tool for visually designing audio studios, aimed at mu
 
 ## Current Tech Stack
 - **Frontend**: React 19.1.0 with TypeScript
-- **Build Tool**: Vite 7.0.4 with React plugin
+- **Build Tool**: Vite 5.4.19 with React plugin (downgraded for Node.js 18 compatibility)
 - **State Management**: Zustand 4.4.0
-- **3D Graphics**: Three.js 0.157.0 (not yet implemented)
+- **2D Graphics**: SVG-based rendering with coordinate transformation
+- **3D Graphics**: Three.js 0.157.0 (available but not yet implemented)
 - **UI Library**: Mantine 8.2.1 (core + hooks)
-- **Utilities**: UUID generation, ESLint for code quality
+- **Utilities**: UUID generation for unique IDs, ESLint for code quality
 
 ## Project Structure
 ```
@@ -61,24 +62,35 @@ Currently includes 4 sample gear items:
 3. **Synthesizer** (1.2×0.4m) - Stereo audio + MIDI I/O
 4. **Mixing Console** (1.8×0.8m) - 4 channel inputs, main stereo out
 
-## Next Phase Goals (From Plan)
+## Completed Features (Updated)
 
-### Phase 1 - MVP Core Features
-1. **2D Layout Canvas** (NOT STARTED)
-   - Drag-and-drop canvas for placing studio gear
-   - Grid snapping system
-   - Move, rotate, align gear items
-   - Top-down room view
+### Phase 1 - MVP Core Features ✅ COMPLETED
+1. **2D Interactive Canvas** (COMPLETED)
+   - SVG-based rendering with proper coordinate system
+   - Pan and zoom controls (drag to pan, mouse wheel to zoom)
+   - 0.5m grid system for precise placement
+   - Default zoom: 50 pixels per meter (5m workspace fits viewport)
+   - Proper world coordinate transformation
 
-2. **Canvas Integration** (NOT STARTED)
-   - Connect LibraryPanel to canvas
-   - Drag items from library to canvas
-   - Create instances of LibraryItems on canvas
+2. **Drag-and-Drop Integration** (COMPLETED)
+   - Seamless drag from LibraryPanel to Canvas
+   - Accurate cursor-based positioning
+   - Creates CanvasItem instances containing LibraryItem data
+   - Real-time coordinate conversion from screen to world space
 
-3. **Basic Interactions** (NOT STARTED)
-   - Select/deselect items on canvas
-   - Move items around canvas
-   - Basic properties panel for selected canvas items
+3. **Item Management & Interaction** (COMPLETED)
+   - Click to select/deselect items (blue highlight when selected)
+   - Drag selected items to move them around canvas
+   - Proper collision detection for item selection
+   - Item rendering with correct meter-based dimensions
+
+4. **Enhanced Data Architecture** (COMPLETED)
+   - CanvasItem type wraps LibraryItem with canvas-specific properties
+   - Zustand store manages canvas state and viewport
+   - Proper separation between library templates and canvas instances
+   - UUID-based unique identification for canvas items
+
+## Next Phase Goals (Upcoming)
 
 ## Technical Notes
 
