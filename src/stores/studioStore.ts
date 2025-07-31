@@ -15,6 +15,10 @@ type StudioState = {
   searchQuery: string
   viewport: Viewport
   
+  // Connections view state
+  connectionsViewport: Viewport
+  nodePositions: Map<string, { x: number, y: number }>
+  
   // Library actions
   setSelectedLibraryItem: (item: LibraryItem | null) => void
   setSearchQuery: (query: string) => void
@@ -30,6 +34,11 @@ type StudioState = {
   // Canvas-specific helpers
   getCanvasItems: () => StudioItem[]
   getAllStudioItems: () => StudioItem[]
+  
+  // Connections view actions
+  getNodePosition: (itemId: string) => { x: number, y: number }
+  updateNodePosition: (itemId: string, x: number, y: number) => void
+  updateConnectionsViewport: (viewport: Partial<Viewport>) => void
   
   // Viewport actions
   updateViewport: (viewport: Partial<Viewport>) => void
@@ -104,6 +113,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     offsetY: 0,
     zoom: 50 // Default zoom: 50 pixels per meter
   },
+  connectionsViewport: {
+    offsetX: 200, // Center the view to show nodes at origin
+    offsetY: 150,
+    zoom: 80 // Default zoom for connections view
+  },
+  nodePositions: new Map(),
   
   // Library actions
   setSelectedLibraryItem: (item) => set({ selectedLibraryItem: item }),
@@ -178,6 +193,53 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const { studioItems } = get()
     return studioItems
   },
+  
+  // Connections view actions
+  getNodePosition: (itemId) => {
+    const { nodePositions } = get()
+    
+    // If position exists, return it
+    if (nodePositions.has(itemId)) {
+      return nodePositions.get(itemId)!
+    }
+    
+    // Auto-generate grid position for new nodes
+    const existingPositions = Array.from(nodePositions.values())
+    const gridSize = 5 // Grid spacing in world units
+    const cols = 4 // Number of columns before wrapping
+    
+    let row = 0
+    let col = 0
+    
+    // Find the next available grid position
+    while (existingPositions.some(pos => 
+      Math.abs(pos.x - (col * gridSize)) < 0.1 && 
+      Math.abs(pos.y - (row * gridSize)) < 0.1
+    )) {
+      col++
+      if (col >= cols) {
+        col = 0
+        row++
+      }
+    }
+    
+    const newPosition = { x: col * gridSize, y: row * gridSize }
+    
+    // Store the new position
+    set((state) => ({
+      nodePositions: new Map(state.nodePositions).set(itemId, newPosition)
+    }))
+    
+    return newPosition
+  },
+  
+  updateNodePosition: (itemId, x, y) => set((state) => ({
+    nodePositions: new Map(state.nodePositions).set(itemId, { x, y })
+  })),
+  
+  updateConnectionsViewport: (newViewport) => set((state) => ({
+    connectionsViewport: { ...state.connectionsViewport, ...newViewport }
+  })),
   
   // Viewport actions
   updateViewport: (newViewport) => set((state) => ({

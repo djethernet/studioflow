@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import { useStudioStore } from '../stores/studioStore'
 import type { StudioItem } from '../types/StudioItem'
 
@@ -16,6 +16,24 @@ export function Canvas() {
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
   const draggedItem = useRef<string | null>(null)
+  const [svgDimensions, setSvgDimensions] = useState({ width: 800, height: 600 })
+
+  // Update SVG dimensions when ref becomes available or window resizes
+  useEffect(() => {
+    const updateDimensions = () => {
+      const rect = svgRef.current?.getBoundingClientRect()
+      if (rect) {
+        setSvgDimensions({ width: rect.width, height: rect.height })
+      }
+    }
+
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+    
+    return () => {
+      window.removeEventListener('resize', updateDimensions)
+    }
+  }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const rect = svgRef.current?.getBoundingClientRect()
@@ -192,12 +210,11 @@ export function Canvas() {
 
   const renderGrid = () => {
     const gridSize = 0.5 // 0.5m grid
-    const rect = svgRef.current?.getBoundingClientRect()
     const viewBox = {
       left: -viewport.offsetX / viewport.zoom,
       top: -viewport.offsetY / viewport.zoom,
-      width: (rect?.width || 800) / viewport.zoom,
-      height: (rect?.height || 600) / viewport.zoom
+      width: svgDimensions.width / viewport.zoom,
+      height: svgDimensions.height / viewport.zoom
     }
 
     const startX = Math.floor(viewBox.left / gridSize) * gridSize
@@ -238,9 +255,8 @@ export function Canvas() {
     return <g>{lines}</g>
   }
 
-  const rect = svgRef.current?.getBoundingClientRect()
-  const viewBoxWidth = (rect?.width ) / viewport.zoom
-  const viewBoxHeight = (rect?.height ) / viewport.zoom
+  const viewBoxWidth = svgDimensions.width / viewport.zoom
+  const viewBoxHeight = svgDimensions.height / viewport.zoom
 
   return (
     <div style={{ flex: 1, overflow: 'hidden', cursor: isDragging.current ? 'grabbing' : 'grab' }}>

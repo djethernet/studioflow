@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Tabs } from '@mantine/core'
 import { LibraryPanel } from './components/LibraryPanel'
 import { Canvas } from './components/Canvas'
+import { ConnectionsCanvas } from './components/ConnectionsCanvas'
 
 function App() {
   const [activeTab, setActiveTab] = useState<string | null>('layout')
@@ -20,9 +21,7 @@ function App() {
         </Tabs.Panel>
 
         <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex' }}>
-          <div style={{ flex: 1, background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <p>Connections view - Coming in Phase 2</p>
-          </div>
+          <ConnectionsCanvas />
         </Tabs.Panel>
       </Tabs>
     </div>
