@@ -10,6 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Sample data and type definitions
 - Next phase goals and development roadmap
 
+For the original product vision and market positioning, see `/plan/product_overview.txt` which contains:
+- Core problem statement and positioning
+- Key use cases and target users
+- Product vision and feature scope
+
 StudioFlow is a web-based tool for visually designing audio studios with drag-and-drop functionality for arranging physical audio gear in 2D room layouts.
 
 ## Development Commands
