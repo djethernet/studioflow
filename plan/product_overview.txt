@@ -1,0 +1,22 @@
+Design Doc
+StudioFlow – Product Plan (Pro-First Focus)
+Core Problem
+Professionals setting up new studio spaces — including engineers, integrators, schools, and serious producers — lack an easy, visual way to plan the physical layout and cable routing of their gear before installation or purchase. Mistakes lead to wasted time, bad ergonomics, missing cables, and inefficient spend.
+Positioning
+StudioFlow is a layout and signal-path planning tool for pro and semi-pro studio setups. It’s built for people who need to validate gear fit, cable connections, and room layout before installation or investment — not for sharing, showing off, or community. Utility first. Fun second.
+
+Think: “Lucidchart for audio gear + IKEA Room Planner for studios.”
+Key Use Cases (Painkiller First)
+1. Studio designers / AV integrators – Client mockups, signal path validation, BOM creation
+2. Producers building $10K+ home or commercial studios – Plan desk + rack layout, ergonomic reach, and routing logic
+3. Music/audio schools – Plan classroom studio builds and communicate setups across teams
+Product Vision
+StudioFlow is a focused 2D web tool that lets users:
+- Drag gear (interfaces, racks, speakers, desks) into a room layout
+- Connect inputs/outputs visually with guided cable routing
+- Flag mistakes or missing connections (basic error-checking)
+- Export a cable list / BOM
+- View a simple 3D snapshot (non-editable) to visualize the space
+- Optionally see real gear prices (Sweetwater integration later)
+
+It’s not CAD, it’s not 3D modeling — it’s fast, approachable, audio-specific layout planning.
