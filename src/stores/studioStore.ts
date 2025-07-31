@@ -39,18 +39,18 @@ type StudioState = {
 const sampleLibraryItems: LibraryItem[] = [
   {
     id: 1,
-    name: 'Studio Monitors',
+    name: 'Genelec 1031A',
     dimensions: { width: 0.3, height: 0.5 },
     connections: [
       { name: 'XLR Input', direction: 'input' },
       { name: 'TRS Input', direction: 'input' }
     ],
     category: 'Speakers',
-    icon: '🔊'
+    icon: '/src/assets/library_images/genelec_1031a.jpg'
   },
   {
     id: 2,
-    name: 'Audio Interface',
+    name: 'MOTU 828',
     dimensions: { width: 0.4, height: 0.2 },
     connections: [
       { name: 'Mic Input 1', direction: 'input' },
@@ -60,11 +60,11 @@ const sampleLibraryItems: LibraryItem[] = [
       { name: 'Headphone Out', direction: 'output' }
     ],
     category: 'Interface',
-    icon: '🎚️'
+    icon: '/src/assets/library_images/motu_828.jpg'
   },
   {
     id: 3,
-    name: 'Synthesizer',
+    name: 'Roland JP-8000',
     dimensions: { width: 1.2, height: 0.4 },
     connections: [
       { name: 'Audio Out L', direction: 'output' },
@@ -73,11 +73,11 @@ const sampleLibraryItems: LibraryItem[] = [
       { name: 'MIDI Out', direction: 'output' }
     ],
     category: 'Synth',
-    icon: '🎹'
+    icon: '/src/assets/library_images/roland_jp8000.jpg'
   },
   {
     id: 4,
-    name: 'Mixing Console',
+    name: 'Yamaha O2R',
     dimensions: { width: 1.8, height: 0.8 },
     connections: [
       { name: 'Ch1 Input', direction: 'input' },
@@ -88,7 +88,7 @@ const sampleLibraryItems: LibraryItem[] = [
       { name: 'Main Out R', direction: 'output' }
     ],
     category: 'Mixer',
-    icon: '🎛️'
+    icon: '/src/assets/library_images/yamaha_o2r.jpg'
   }
 ]
 

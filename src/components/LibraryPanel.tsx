@@ -1,4 +1,4 @@
-import { Box, Text, TextInput, ScrollArea, Group, Stack, Paper, Divider } from '@mantine/core'
+import { Box, Text, TextInput, ScrollArea, Group, Stack, Paper, Divider, Image } from '@mantine/core'
 import { useStudioStore } from '../stores/studioStore'
 import type { LibraryItem } from '../types/StudioItem'
 
@@ -46,10 +46,7 @@ export function LibraryPanel() {
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
               >
-                <Group gap="sm">
-                  <Text size="lg">{item.icon || '🎛️'}</Text>
-                  <Text size="sm" fw={500}>{item.name}</Text>
-                </Group>
+                <Text size="sm" fw={500}>{item.name}</Text>
               </Paper>
             ))}
           </Stack>
@@ -60,21 +57,33 @@ export function LibraryPanel() {
         <Box>
           {selectedLibraryItem ? (
             <Stack gap="xs">
-              <Text size="md" fw={600}>{selectedLibraryItem.name}</Text>
-              <Text size="sm">
-                <Text span fw={500}>Size:</Text> {selectedLibraryItem.dimensions.width}m × {selectedLibraryItem.dimensions.height}m
-              </Text>
-              <Text size="sm">
-                <Text span fw={500}>Inputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'input').length}
-              </Text>
-              <Text size="sm">
-                <Text span fw={500}>Outputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'output').length}
-              </Text>
-              {selectedLibraryItem.category && (
-                <Text size="sm">
-                  <Text span fw={500}>Category:</Text> {selectedLibraryItem.category}
-                </Text>
-              )}
+              <Group gap="md" align="flex-start">
+                <Image 
+                  src={selectedLibraryItem.icon} 
+                  alt={selectedLibraryItem.name}
+                  w={80}
+                  h={60}
+                  fit="cover"
+                  radius="sm"
+                />
+                <Stack gap="xs" style={{ flex: 1 }}>
+                  <Text size="md" fw={600}>{selectedLibraryItem.name}</Text>
+                  <Text size="sm">
+                    <Text span fw={500}>Size:</Text> {selectedLibraryItem.dimensions.width}m × {selectedLibraryItem.dimensions.height}m
+                  </Text>
+                  <Text size="sm">
+                    <Text span fw={500}>Inputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'input').length}
+                  </Text>
+                  <Text size="sm">
+                    <Text span fw={500}>Outputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'output').length}
+                  </Text>
+                  {selectedLibraryItem.category && (
+                    <Text size="sm">
+                      <Text span fw={500}>Category:</Text> {selectedLibraryItem.category}
+                    </Text>
+                  )}
+                </Stack>
+              </Group>
             </Stack>
           ) : (
             <Text size="sm" c="dimmed">
