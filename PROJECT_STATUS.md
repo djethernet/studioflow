@@ -69,11 +69,13 @@ src/
 - Type-only imports configured for verbatimModuleSyntax
 
 ## Sample Data
-Currently includes 4 sample gear items:
-1. **Studio Monitors** (0.3×0.5m) - XLR/TRS inputs
-2. **Audio Interface** (0.4×0.2m) - 2 mic inputs, stereo outputs, headphone out
-3. **Synthesizer** (1.2×0.4m) - Stereo audio + MIDI I/O
-4. **Mixing Console** (1.8×0.8m) - 4 channel inputs, main stereo out
+Currently includes 4 sample gear items with actual product images:
+1. **Genelec 1031A** (0.3×0.5m) - XLR/TRS inputs
+2. **MOTU 828** (0.4×0.2m) - 2 mic inputs, stereo outputs, headphone out
+3. **Roland JP-8000** (1.2×0.4m) - Stereo audio + MIDI I/O
+4. **Yamaha O2R** (1.8×0.8m) - 4 channel inputs, main stereo out
+
+All items now display actual product photos in the properties panel for professional presentation.
 
 ## Architecture Highlights
 
@@ -89,24 +91,58 @@ Currently includes 4 sample gear items:
 3. **Canvas View** → Shows `isOnCanvas: true` items
 4. **Future BOM View** → Shows all studio items regardless of canvas placement
 
+## Product Vision Alignment
+
+### Current Gap Analysis (vs `/plan/product_overview.txt`)
+✅ **Completed**: Drag gear into room layout with professional UI  
+✅ **Completed**: Real gear with actual product images and specifications  
+❌ **Missing**: Visual cable routing and connection system  
+❌ **Missing**: BOM/cable list export functionality  
+❌ **Missing**: Connection validation and error checking  
+❌ **Missing**: 3D preview capability  
+
+### Target Users
+- **Studio designers / AV integrators** - Need client mockups, signal path validation, BOM creation
+- **Producers building $10K+ studios** - Need desk/rack layout, ergonomics, routing logic  
+- **Music/audio schools** - Need classroom studio planning and team communication
+
 ## Next Phase Goals
 
-### Phase 2 - Enhanced Functionality (Upcoming)
-1. **Bill of Materials (BOM) View**
-   - Tabular view of all studio items using `getAllStudioItems()`
-   - Quantity counting, cost estimation, export functionality
-   - Toggle items on/off canvas from BOM view
+### Phase 2A - Connection System (CRITICAL - Core Differentiator)
+1. **Visual Cable Routing**
+   - Click-to-connect interface between gear inputs/outputs
+   - Visual connection lines with cable type indicators (XLR, TRS, MIDI, USB)
+   - Connection validation (compatible ports, signal flow logic)
+   - Cable length estimation for BOM generation
+
+2. **Connection Management**
+   - Connection panel/view for managing all studio connections
+   - Connection templates for common studio setups
+   - Error detection: missing connections, signal loops, impedance mismatches
+
+### Phase 2B - Professional Export Tools (High Priority)
+1. **Bill of Materials (BOM) Export**
+   - Cable list with types, lengths, and quantities
+   - Gear list with specifications and quantities
+   - Export formats: CSV, PDF, professional reports
+   - Cost estimation integration (future: Sweetwater API)
 
 2. **Project Management**
    - Save/load studio projects as JSON
    - Project metadata (name, description, created date)
-   - Export capabilities (PNG, PDF, CSV)
+   - Export capabilities (PNG layout diagrams, connection diagrams)
 
-3. **Advanced Canvas Features**
-   - Item rotation and snapping
+### Phase 2C - Enhanced Professional Features (Medium Priority)
+1. **Advanced Canvas Features**
+   - Item rotation and snapping to grid
    - Multi-select and group operations
    - Copy/paste functionality
    - Undo/redo system
+
+2. **3D Preview**
+   - Simple non-editable 3D visualization using Three.js
+   - Room perspective with gear placement
+   - Cable routing visualization in 3D space
 
 ## Technical Notes
 
@@ -153,17 +189,19 @@ Currently includes 4 sample gear items:
 - **WSL Development**: Added Vite polling for proper file watching in WSL environment
 
 ### Recent Commits
+- `439b3d7` - **Update library to use actual gear images instead of emojis**
+- `cd3ac15` - Update PROJECT_STATUS.md with Model-View architecture documentation
 - `e23e142` - **Refactor to unified Model-View architecture with single data store**
 - `1d7c916` - Update PROJECT_STATUS.md with latest session improvements
 - `0036cf2` - Fix wheel event passive listener warning in Canvas
-- `eb7b387` - Fix canvas width and grid rendering issues
-- `5f27506` - Enable polling in Vite config for WSL file watching
 
 ## Current Status
-✅ **Phase 1 Complete**: Full MVP functionality with modern architecture
-- Interactive canvas with precise gear placement
-- Unified data store ready for multiple views
-- Professional UI with all core features working
-- Clean, extensible codebase ready for advanced features
+✅ **Phase 1 Complete**: Professional layout tool foundation
+- Interactive canvas with precise gear placement and actual product images
+- Unified data store ready for multiple views and connections
+- Professional UI matching target user expectations
+- Clean, extensible codebase ready for connection system
 
-**Ready for Phase 2**: BOM view, project management, and enhanced canvas features.
+**Next Critical Priority**: Visual cable routing system to differentiate from generic layout tools and serve professional studio planning needs.
+
+**Ready for Phase 2A**: Connection system implementation - the core feature that transforms this from a layout tool into a professional studio planning solution.
