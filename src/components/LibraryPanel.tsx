@@ -1,20 +1,20 @@
 import { Box, Text, TextInput, ScrollArea, Group, Stack, Paper, Divider } from '@mantine/core'
-import { useLibraryStore } from '../stores/libraryStore'
-import type { LibraryItem } from '../types/LibraryItem'
+import { useStudioStore } from '../stores/studioStore'
+import type { LibraryItem } from '../types/StudioItem'
 
 export function LibraryPanel() {
   const { 
-    selectedItem, 
+    selectedLibraryItem, 
     searchQuery, 
-    setSelectedItem, 
+    setSelectedLibraryItem, 
     setSearchQuery, 
-    getFilteredItems 
-  } = useLibraryStore()
+    getFilteredLibraryItems 
+  } = useStudioStore()
   
-  const filteredItems = getFilteredItems()
+  const filteredItems = getFilteredLibraryItems()
 
   const handleItemClick = (item: LibraryItem) => {
-    setSelectedItem(item)
+    setSelectedLibraryItem(item)
   }
 
   const handleDragStart = (e: React.DragEvent, item: LibraryItem) => {
@@ -40,7 +40,7 @@ export function LibraryPanel() {
               <Paper
                 key={item.id}
                 p="sm"
-                bg={selectedItem?.id === item.id ? 'blue.1' : 'gray.0'}
+                bg={selectedLibraryItem?.id === item.id ? 'blue.1' : 'gray.0'}
                 style={{ cursor: 'grab' }}
                 onClick={() => handleItemClick(item)}
                 draggable
@@ -58,21 +58,21 @@ export function LibraryPanel() {
         <Divider />
         
         <Box>
-          {selectedItem ? (
+          {selectedLibraryItem ? (
             <Stack gap="xs">
-              <Text size="md" fw={600}>{selectedItem.name}</Text>
+              <Text size="md" fw={600}>{selectedLibraryItem.name}</Text>
               <Text size="sm">
-                <Text span fw={500}>Size:</Text> {selectedItem.dimensions.width}m × {selectedItem.dimensions.height}m
+                <Text span fw={500}>Size:</Text> {selectedLibraryItem.dimensions.width}m × {selectedLibraryItem.dimensions.height}m
               </Text>
               <Text size="sm">
-                <Text span fw={500}>Inputs:</Text> {selectedItem.connections.filter(c => c.direction === 'input').length}
+                <Text span fw={500}>Inputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'input').length}
               </Text>
               <Text size="sm">
-                <Text span fw={500}>Outputs:</Text> {selectedItem.connections.filter(c => c.direction === 'output').length}
+                <Text span fw={500}>Outputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'output').length}
               </Text>
-              {selectedItem.category && (
+              {selectedLibraryItem.category && (
                 <Text size="sm">
-                  <Text span fw={500}>Category:</Text> {selectedItem.category}
+                  <Text span fw={500}>Category:</Text> {selectedLibraryItem.category}
                 </Text>
               )}
             </Stack>

@@ -1,9 +1,17 @@
 import { useRef, useCallback, useEffect } from 'react'
-import { useDiagramStore } from '../stores/diagramStore'
-import type { CanvasItem } from '../stores/diagramStore'
+import { useStudioStore } from '../stores/studioStore'
+import type { StudioItem } from '../types/StudioItem'
 
 export function Canvas() {
-  const { items, viewport, updateViewport, selectItem, updateItemPosition, addGearItem } = useDiagramStore()
+  const { 
+    getCanvasItems, 
+    viewport, 
+    updateViewport, 
+    selectStudioItem, 
+    updateStudioItemPosition, 
+    addStudioItem 
+  } = useStudioStore()
+  const items = getCanvasItems()
   const svgRef = useRef<SVGSVGElement>(null)
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
@@ -31,24 +39,24 @@ export function Canvas() {
 
     // Check if clicking on an item
     const clickedItem = items.find(item => {
-      const itemLeft = item.x - item.gearItem.dimensions.width / 2
-      const itemRight = item.x + item.gearItem.dimensions.width / 2
-      const itemTop = item.y - item.gearItem.dimensions.height / 2
-      const itemBottom = item.y + item.gearItem.dimensions.height / 2
+      const itemLeft = item.position.x - item.dimensions.width / 2
+      const itemRight = item.position.x + item.dimensions.width / 2
+      const itemTop = item.position.y - item.dimensions.height / 2
+      const itemBottom = item.position.y + item.dimensions.height / 2
       
       return x >= itemLeft && x <= itemRight && y >= itemTop && y <= itemBottom
     })
 
     if (clickedItem) {
-      selectItem(clickedItem.id)
+      selectStudioItem(clickedItem.id)
       draggedItem.current = clickedItem.id
     } else {
-      selectItem(null)
+      selectStudioItem(null)
     }
 
     isDragging.current = true
     dragStart.current = { x: e.clientX, y: e.clientY }
-  }, [items, viewport, selectItem])
+  }, [items, viewport, selectStudioItem])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging.current) return
@@ -63,7 +71,7 @@ export function Canvas() {
       
       const item = items.find(i => i.id === draggedItem.current)
       if (item) {
-        updateItemPosition(draggedItem.current, item.x + worldDeltaX, item.y + worldDeltaY)
+        updateStudioItemPosition(draggedItem.current, item.position.x + worldDeltaX, item.position.y + worldDeltaY)
       }
     } else {
       // Pan canvas
@@ -74,7 +82,7 @@ export function Canvas() {
     }
 
     dragStart.current = { x: e.clientX, y: e.clientY }
-  }, [isDragging, draggedItem, viewport, items, updateViewport, updateItemPosition])
+  }, [isDragging, draggedItem, viewport, items, updateViewport, updateStudioItemPosition])
 
   const handleMouseUp = useCallback(() => {
     isDragging.current = false
@@ -146,37 +154,37 @@ export function Canvas() {
       const worldX = viewBoxX + (normalizedX * viewBoxWidth)
       const worldY = viewBoxY + (normalizedY * viewBoxHeight)
       
-      addGearItem(gearItem, worldX, worldY)
+      addStudioItem(gearItem, worldX, worldY)
     } catch (error) {
       console.error('Failed to parse dropped item:', error)
     }
-  }, [viewport, addGearItem])
+  }, [viewport, addStudioItem])
 
-  const renderItem = (item: CanvasItem) => {
-    const x = item.x - item.gearItem.dimensions.width / 2
-    const y = item.y - item.gearItem.dimensions.height / 2
+  const renderItem = (item: StudioItem) => {
+    const x = item.position.x - item.dimensions.width / 2
+    const y = item.position.y - item.dimensions.height / 2
     
     return (
       <g key={item.id}>
         <rect
           x={x}
           y={y}
-          width={item.gearItem.dimensions.width}
-          height={item.gearItem.dimensions.height}
+          width={item.dimensions.width}
+          height={item.dimensions.height}
           fill={item.selected ? '#e3f2fd' : '#f5f5f5'}
           stroke={item.selected ? '#2196f3' : '#666'}
           strokeWidth={item.selected ? 0.02 : 0.01}
           rx={0.05}
         />
         <text
-          x={item.x}
-          y={item.y}
+          x={item.position.x}
+          y={item.position.y}
           textAnchor="middle"
           dominantBaseline="middle"
           fontSize={0.1}
           fill="#333"
         >
-          {item.gearItem.name}
+          {item.name}
         </text>
       </g>
     )
