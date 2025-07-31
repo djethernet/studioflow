@@ -108,17 +108,68 @@ All items now display actual product photos in the properties panel for professi
 
 ## Next Phase Goals
 
-### Phase 2A - Connection System (CRITICAL - Core Differentiator)
-1. **Visual Cable Routing**
-   - Click-to-connect interface between gear inputs/outputs
-   - Visual connection lines with cable type indicators (XLR, TRS, MIDI, USB)
-   - Connection validation (compatible ports, signal flow logic)
-   - Cable length estimation for BOM generation
+### Phase 2A - Node Editor Connection System (CRITICAL - Core Differentiator)
+**Implementation Plan: Lightwave 3D Visual UX with Mantine Theme**
 
-2. **Connection Management**
-   - Connection panel/view for managing all studio connections
-   - Connection templates for common studio setups
-   - Error detection: missing connections, signal loops, impedance mismatches
+#### Phase 1: Tab System Implementation
+- Add tab navigation at top using Mantine Tabs component
+- Layout tab: Current canvas view for spatial gear arrangement
+- Connections tab: Node editor view for signal routing
+- Maintain existing functionality in Layout view
+
+#### Phase 2: Connections View Foundation
+- Independent coordinate system from Layout view using separate SVG canvas
+- Items automatically appear in Connections view when added to Layout
+- Grid-based auto-positioning for new nodes (no manual library drag-drop)
+- Pan/zoom functionality matching Layout view implementation
+- Node positioning independent of Layout spatial positions
+
+#### Phase 3: Node Editor UI & Store Refactoring
+**Store Enhancements:**
+- Extend Connection type with:
+  - `direction: 'input' | 'output'`
+  - `type: 'XLR' | '1/4' | 'MIDI' | 'USB' | 'Power'`
+  - `way: 'port' | 'socket'`
+  - `name: string` (e.g., "Midi A", "Microphone", "Key")
+- Add `nodePositions` map for connection view placement
+- Separate connection state from layout positions
+
+**Node UI Implementation (Mantine Styled):**
+- Mantine Paper components for node boxes with shadows
+- Node header with gear name using Mantine Text
+- Left column: Input connections with Mantine indicators
+- Right column: Output connections with Mantine indicators
+- Connection circles using SVG with Mantine theme colors
+- Professional styling consistent with existing UI
+
+#### Phase 4: Interactive Connection System
+- SVG-based drag lines from output to input circles
+- Visual cable rendering between connected nodes
+- Type validation: only matching connection types can connect
+- Click existing connection to delete
+- Connection state persistence in store
+- Mantine notifications for connection feedback
+
+**Technical Architecture:**
+```typescript
+interface NodeConnection {
+  id: string;
+  fromNodeId: string;
+  fromConnectionId: string;
+  toNodeId: string;
+  toConnectionId: string;
+  type: ConnectionType;
+}
+
+interface ConnectionsViewState {
+  nodePositions: Map<string, {x: number, y: number}>;
+  viewport: Viewport;
+  connections: NodeConnection[];
+}
+```
+
+### Phase 2B - Professional Export Tools (High Priority)
+1. **Bill of Materials (BOM) Export**
 
 ### Phase 2B - Professional Export Tools (High Priority)
 1. **Bill of Materials (BOM) Export**
