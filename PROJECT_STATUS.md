@@ -15,44 +15,57 @@ StudioFlow is a web-based tool for visually designing audio studios, aimed at mu
 ## Project Structure
 ```
 src/
-├── App.tsx                     # Main app component (shows LibraryPanel)
+├── App.tsx                     # Main app component (shows LibraryPanel + Canvas)
 ├── main.tsx                    # Entry point with MantineProvider
 ├── components/
-│   └── LibraryPanel.tsx        # Gear library with search and selection
+│   ├── LibraryPanel.tsx        # Gear library with search and selection
+│   └── Canvas.tsx              # Interactive 2D canvas with pan/zoom/drag-drop
 ├── stores/
-│   ├── diagramStore.tsx        # Canvas items and viewport state
-│   └── libraryStore.ts         # Gear library state and filtering
+│   └── studioStore.ts          # Unified data store (Model-View architecture)
 ├── types/
-│   └── LibraryItem.ts          # Core gear item type definitions
+│   └── StudioItem.ts           # Core type definitions (Library + Studio items)
 └── assets/
     └── react.svg
 ```
 
 ## Completed Features
 
-### 1. Core Type System
-- **LibraryItem** interface with dimensions, connections, position, rotation
-- **Connection** type for input/output ports
-- **Dimensions** and **Position** interfaces
-- Fully typed with TypeScript
+### 1. Model-View Architecture ✅ COMPLETED
+- **Unified Data Store**: Single `studioStore` replacing separate library/diagram stores
+- **StudioItem** type combining library templates with instance data
+- **LibraryItem** templates separate from studio instances
+- **Single Source of Truth**: All project data in one place for multiple view types
+- **Extensible Design**: Ready for BOM view, project save/load, and additional features
 
-### 2. Library Panel (COMPLETED)
+### 2. Core Type System ✅ COMPLETED
+- **StudioItem** interface with library data + instance properties (position, canvas state)
+- **LibraryItem** templates with dimensions, connections, categories
+- **Connection** type for input/output ports with grouping
+- **Viewport** interface for canvas pan/zoom state
+- Fully typed with TypeScript throughout
+
+### 3. Library Panel ✅ COMPLETED
 - Searchable gear library using Mantine components
 - Professional UI with Paper containers, shadows, proper spacing
 - Split layout: gear list (top) + selected item properties (bottom)
 - Sample gear data: Studio Monitors, Audio Interface, Synthesizer, Mixing Console
 - Real-time filtering by name/category
-- Selection highlighting and hover states
+- Selection highlighting and drag-to-canvas functionality
 
-### 3. State Management
-- **Library Store**: Manages gear library, search, selection using Zustand
-- **Diagram Store**: Ready for canvas items and viewport management
-- Proper separation of concerns
+### 4. Interactive Canvas ✅ COMPLETED
+- **SVG-based 2D Canvas**: Precise coordinate system with world/screen transformation
+- **Pan & Zoom**: Mouse drag to pan, wheel to zoom (10-200x range)
+- **Grid System**: 0.5m grid for precise gear placement
+- **Drag-and-Drop**: Seamless drag from library to canvas with accurate positioning
+- **Item Selection**: Click to select/deselect with visual highlighting
+- **Item Movement**: Drag selected items to reposition on canvas
+- **Collision Detection**: Precise click detection using gear dimensions
 
-### 4. Development Setup
+### 5. Development Infrastructure ✅ COMPLETED
 - Mantine UI library fully configured with provider and CSS
-- ESLint and TypeScript strict configuration
-- Build and development scripts working
+- ESLint and TypeScript strict configuration with no errors
+- Build and development scripts working perfectly
+- WSL-compatible development with Vite polling
 - Type-only imports configured for verbatimModuleSyntax
 
 ## Sample Data
@@ -62,35 +75,38 @@ Currently includes 4 sample gear items:
 3. **Synthesizer** (1.2×0.4m) - Stereo audio + MIDI I/O
 4. **Mixing Console** (1.8×0.8m) - 4 channel inputs, main stereo out
 
-## Completed Features (Updated)
+## Architecture Highlights
 
-### Phase 1 - MVP Core Features ✅ COMPLETED
-1. **2D Interactive Canvas** (COMPLETED)
-   - SVG-based rendering with proper coordinate system
-   - Pan and zoom controls (drag to pan, mouse wheel to zoom)
-   - 0.5m grid system for precise placement
-   - Default zoom: 50 pixels per meter (5m workspace fits viewport)
-   - Proper world coordinate transformation
+### Model-View Pattern
+- **Model**: `studioStore` holds all project data (library templates + studio instances)
+- **Views**: Components filter data as needed (`getCanvasItems()`, `getAllStudioItems()`)
+- **Future-Ready**: Easy to add BOM view, connections view, project management
+- **Clean Separation**: Library templates vs studio instances with proper relationships
 
-2. **Drag-and-Drop Integration** (COMPLETED)
-   - Seamless drag from LibraryPanel to Canvas
-   - Accurate cursor-based positioning
-   - Creates CanvasItem instances containing LibraryItem data
-   - Real-time coordinate conversion from screen to world space
+### Data Flow
+1. **Library Templates** → User drags from library
+2. **Studio Instances** → Created with position, canvas state, unique IDs
+3. **Canvas View** → Shows `isOnCanvas: true` items
+4. **Future BOM View** → Shows all studio items regardless of canvas placement
 
-3. **Item Management & Interaction** (COMPLETED)
-   - Click to select/deselect items (blue highlight when selected)
-   - Drag selected items to move them around canvas
-   - Proper collision detection for item selection
-   - Item rendering with correct meter-based dimensions
+## Next Phase Goals
 
-4. **Enhanced Data Architecture** (COMPLETED)
-   - CanvasItem type wraps LibraryItem with canvas-specific properties
-   - Zustand store manages canvas state and viewport
-   - Proper separation between library templates and canvas instances
-   - UUID-based unique identification for canvas items
+### Phase 2 - Enhanced Functionality (Upcoming)
+1. **Bill of Materials (BOM) View**
+   - Tabular view of all studio items using `getAllStudioItems()`
+   - Quantity counting, cost estimation, export functionality
+   - Toggle items on/off canvas from BOM view
 
-## Next Phase Goals (Upcoming)
+2. **Project Management**
+   - Save/load studio projects as JSON
+   - Project metadata (name, description, created date)
+   - Export capabilities (PNG, PDF, CSV)
+
+3. **Advanced Canvas Features**
+   - Item rotation and snapping
+   - Multi-select and group operations
+   - Copy/paste functionality
+   - Undo/redo system
 
 ## Technical Notes
 
@@ -100,11 +116,12 @@ Currently includes 4 sample gear items:
 - Professional styling with consistent design tokens
 - Easy to extend and customize
 
-### State Architecture
-- Library items are template objects
-- Canvas will create instances with unique positions
-- Zustand stores handle all state management
-- Type-safe throughout
+### Store Architecture
+- **Unified studioStore**: Single source of truth for all project data
+- **Library Templates**: Read-only gear definitions for dragging
+- **Studio Instances**: Copies of templates with position, canvas state, unique IDs
+- **View Helpers**: `getCanvasItems()`, `getAllStudioItems()` for different views
+- **Type-Safe**: Full TypeScript coverage with proper type relationships
 
 ### Development Commands
 - `npm run dev` - Start development server
@@ -114,31 +131,39 @@ Currently includes 4 sample gear items:
 
 ## Files to Reference
 - `/plan/plan.txt` - Original design document and MVP specifications
-- `src/types/LibraryItem.ts` - Core type definitions
-- `src/stores/libraryStore.ts` - Library state management
-- `src/components/LibraryPanel.tsx` - Current UI implementation
+- `src/types/StudioItem.ts` - Core type definitions (LibraryItem + StudioItem)
+- `src/stores/studioStore.ts` - Unified data store with Model-View architecture
+- `src/components/LibraryPanel.tsx` - Gear library UI implementation
+- `src/components/Canvas.tsx` - Interactive 2D canvas implementation
 
 ## Recent Development Progress
 
-### Latest Session Improvements
+### Major Architecture Refactor (Latest)
+- **Model-View Architecture**: Refactored to unified `studioStore` replacing separate library/diagram stores
+- **Data Separation**: Clean separation between library templates and studio instances
+- **Single Source of Truth**: All project data centralized for multiple view support
+- **Future-Ready Design**: Architecture prepared for BOM view, project save/load, and advanced features
+- **Type System Enhancement**: Updated type definitions with proper relationships and extensibility
+
+### Previous Session Improvements
+- **Full MVP Canvas**: Complete 2D interactive canvas with pan/zoom/drag-drop
 - **Canvas Layout Fix**: Resolved full-width display issue by removing body flex centering
 - **Dynamic Grid Rendering**: Updated grid to use actual SVG dimensions instead of hardcoded 800x600
 - **Wheel Event Fix**: Fixed passive listener warning by using native event listener with preventDefault
 - **WSL Development**: Added Vite polling for proper file watching in WSL environment
-- **Documentation**: Updated CLAUDE.md to reference PROJECT_STATUS.md for better context
 
 ### Recent Commits
+- `e23e142` - **Refactor to unified Model-View architecture with single data store**
+- `1d7c916` - Update PROJECT_STATUS.md with latest session improvements
 - `0036cf2` - Fix wheel event passive listener warning in Canvas
-- `eb7b387` - Fix canvas width and grid rendering issues  
+- `eb7b387` - Fix canvas width and grid rendering issues
 - `5f27506` - Enable polling in Vite config for WSL file watching
-- `42ff746` - Update CLAUDE.md to reference PROJECT_STATUS.md
-- `4329e03` - Update PROJECT_STATUS.md with Phase 1 completion
 
-## Ready for Next Steps
-The foundation is solid. Next logical steps would be:
-1. Create the main canvas component for item placement
-2. Implement drag-and-drop from library to canvas
-3. Add basic item manipulation (move, rotate, select)
-4. Connect the two systems via shared state
+## Current Status
+✅ **Phase 1 Complete**: Full MVP functionality with modern architecture
+- Interactive canvas with precise gear placement
+- Unified data store ready for multiple views
+- Professional UI with all core features working
+- Clean, extensible codebase ready for advanced features
 
-The project is well-architected and ready for the core canvas functionality that will make it a functional studio planning tool.
+**Ready for Phase 2**: BOM view, project management, and enhanced canvas features.
