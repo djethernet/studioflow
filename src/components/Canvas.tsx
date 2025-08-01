@@ -37,6 +37,7 @@ export function Canvas() {
   }, [])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return
 
@@ -78,6 +79,7 @@ export function Canvas() {
   }, [items, viewport, selectStudioItem])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
     if (!isDragging.current) return
 
     const deltaX = e.clientX - dragStart.current.x
@@ -103,7 +105,8 @@ export function Canvas() {
     dragStart.current = { x: e.clientX, y: e.clientY }
   }, [isDragging, draggedItem, viewport, items, updateViewport, updateStudioItemPosition])
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e?: React.MouseEvent) => {
+    e?.preventDefault()
     isDragging.current = false
     draggedItem.current = null
   }, [])
@@ -276,7 +279,15 @@ export function Canvas() {
   const viewBoxHeight = svgDimensions.height / viewport.zoom
 
   return (
-    <div style={{ flex: 1, overflow: 'hidden', cursor: isDragging.current ? 'grabbing' : 'grab' }}>
+    <div style={{ 
+      flex: 1, 
+      overflow: 'hidden', 
+      cursor: isDragging.current ? 'grabbing' : 'grab',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none'
+    }}>
       <svg
         ref={svgRef}
         width="100%"
@@ -288,6 +299,7 @@ export function Canvas() {
         onMouseLeave={handleMouseUp}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        onDragStart={(e) => e.preventDefault()}
       >
         {renderGrid()}
         {items.map(renderItem)}

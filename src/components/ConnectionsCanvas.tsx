@@ -120,6 +120,7 @@ export function ConnectionsCanvas() {
   }, [getNodePosition])
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
     const worldPos = screenToWorld(e.clientX, e.clientY)
 
     // Check if clicking on a connection circle first
@@ -181,6 +182,8 @@ export function ConnectionsCanvas() {
   }, [items, getNodePosition, screenToWorld, getConnectionPosition, connections, removeNodeConnection, addLogMessage])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    
     // Update connection drag position
     if (dragConnection) {
       const worldPos = screenToWorld(e.clientX, e.clientY)
@@ -212,6 +215,8 @@ export function ConnectionsCanvas() {
   }, [isDragging, draggedNode, connectionsViewport, getNodePosition, updateNodePosition, updateConnectionsViewport, dragConnection, screenToWorld])
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    
     // Handle connection completion
     if (dragConnection) {
       const worldPos = screenToWorld(e.clientX, e.clientY)
@@ -393,6 +398,7 @@ export function ConnectionsCanvas() {
           fontSize={0.15}
           fill="#495057"
           fontWeight="600"
+          style={{ userSelect: 'none', pointerEvents: 'none' }}
         >
           {item.name}
         </text>
@@ -419,6 +425,7 @@ export function ConnectionsCanvas() {
                 dominantBaseline="middle"
                 fontSize={0.1}
                 fill="#495057"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
                 {connection.name}
               </text>
@@ -448,6 +455,7 @@ export function ConnectionsCanvas() {
                 dominantBaseline="middle"
                 fontSize={0.1}
                 fill="#495057"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
                 {connection.name}
               </text>
@@ -509,7 +517,15 @@ export function ConnectionsCanvas() {
   const viewBoxHeight = svgDimensions.height / connectionsViewport.zoom
 
   return (
-    <div style={{ flex: 1, overflow: 'hidden', cursor: isDragging.current ? 'grabbing' : 'grab' }}>
+    <div style={{ 
+      flex: 1, 
+      overflow: 'hidden', 
+      cursor: isDragging.current ? 'grabbing' : 'grab',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none'
+    }}>
       <svg
         ref={svgRef}
         width="100%"
@@ -519,6 +535,7 @@ export function ConnectionsCanvas() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onDragStart={(e) => e.preventDefault()}
       >
         {renderGrid()}
         {renderConnections()}
