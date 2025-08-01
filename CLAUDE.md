@@ -19,7 +19,7 @@ StudioFlow is a web-based tool for visually designing audio studios with drag-an
 
 ## Development Commands
 
-Do not run `npn run dev` to start Vite and hot reload. it will stall you. If you need to start the server, I can start it for you, just ask me.
+Do not run `npn run dev` to start Vite and hot reload. it will stall you. If you need to start the server, I can start it for you, just ask me. (there may be already one running on http://localhost:5173/)
 
 ### Core Commands
 - `npm run build` - Build for production (runs TypeScript compiler then Vite build)
