@@ -8,15 +8,28 @@ export function ConnectionsCanvas() {
     connectionsViewport,
     updateConnectionsViewport,
     getNodePosition,
-    updateNodePosition
+    updateNodePosition,
+    getNodeConnections,
+    addNodeConnection,
+    removeNodeConnection,
+    addLogMessage
   } = useStudioStore()
   
   const items = getAllStudioItems()
+  const connections = getNodeConnections()
   const svgRef = useRef<SVGSVGElement>(null)
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
   const draggedNode = useRef<string | null>(null)
   const [svgDimensions, setSvgDimensions] = useState({ width: 800, height: 600 })
+  
+  // Connection dragging state
+  const [dragConnection, setDragConnection] = useState<{
+    fromNodeId: string
+    fromConnectionId: string
+    startPos: { x: number, y: number }
+    currentPos: { x: number, y: number }
+  } | null>(null)
 
   // Update SVG dimensions when ref becomes available or window resizes
   useEffect(() => {
@@ -55,18 +68,14 @@ export function ConnectionsCanvas() {
     }
   }, [])
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+  // Helper to convert screen coordinates to world coordinates
+  const screenToWorld = useCallback((screenX: number, screenY: number) => {
     const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect) return
+    if (!rect) return { x: 0, y: 0 }
 
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
+    const normalizedX = (screenX - rect.left) / rect.width
+    const normalizedY = (screenY - rect.top) / rect.height
     
-    // Convert to normalized coordinates (0-1)
-    const normalizedX = mouseX / rect.width
-    const normalizedY = mouseY / rect.height
-    
-    // Convert to world coordinates using viewBox
     const viewBoxWidth = rect.width / connectionsViewport.zoom
     const viewBoxHeight = rect.height / connectionsViewport.zoom
     const viewBoxX = -connectionsViewport.offsetX / connectionsViewport.zoom
@@ -74,6 +83,77 @@ export function ConnectionsCanvas() {
     
     const x = viewBoxX + (normalizedX * viewBoxWidth)
     const y = viewBoxY + (normalizedY * viewBoxHeight)
+    
+    return { x, y }
+  }, [connectionsViewport])
+
+  // Helper to get connection circle position
+  const getConnectionPosition = useCallback((item: StudioItem, connectionId: string) => {
+    const nodePos = getNodePosition(item.id)
+    const nodeWidth = 3
+    const connection = item.connections.find(conn => conn.id === connectionId)
+    if (!connection) return { x: 0, y: 0 }
+    
+    const inputCount = item.connections.filter(conn => conn.direction === 'input').length
+    const outputCount = item.connections.filter(conn => conn.direction === 'output').length
+    const maxConnections = Math.max(inputCount, outputCount, 1)
+    const nodeHeight = Math.max(2, 0.8 + (maxConnections * 0.25))
+    
+    const x = nodePos.x - nodeWidth / 2
+    const y = nodePos.y - nodeHeight / 2
+    
+    if (connection.direction === 'input') {
+      const inputConnections = item.connections.filter(conn => conn.direction === 'input')
+      const index = inputConnections.findIndex(conn => conn.id === connectionId)
+      return {
+        x: x + 0.08,
+        y: y + 0.6 + (index * 0.25)
+      }
+    } else {
+      const outputConnections = item.connections.filter(conn => conn.direction === 'output')
+      const index = outputConnections.findIndex(conn => conn.id === connectionId)
+      return {
+        x: x + nodeWidth - 0.08,
+        y: y + 0.6 + (index * 0.25)
+      }
+    }
+  }, [getNodePosition])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    const worldPos = screenToWorld(e.clientX, e.clientY)
+
+    // Check if clicking on a connection circle first
+    for (const item of items) {
+      for (const connection of item.connections) {
+        const connPos = getConnectionPosition(item, connection.id)
+        const distance = Math.sqrt(
+          Math.pow(worldPos.x - connPos.x, 2) + Math.pow(worldPos.y - connPos.y, 2)
+        )
+        
+        if (distance <= 0.06) { // Slightly larger hit area than circle radius
+          if (connection.direction === 'output') {
+            // Start dragging a new connection from output
+            setDragConnection({
+              fromNodeId: item.id,
+              fromConnectionId: connection.id,
+              startPos: connPos,
+              currentPos: worldPos
+            })
+            return
+          } else {
+            // Check if there's an existing connection to this input to delete
+            const existingConnection = connections.find(conn => 
+              conn.toNodeId === item.id && conn.toConnectionId === connection.id
+            )
+            if (existingConnection) {
+              removeNodeConnection(existingConnection.id)
+              addLogMessage('info', 'Connection removed')
+            }
+            return
+          }
+        }
+      }
+    }
 
     // Check if clicking on a node (using node dimensions for hit detection)
     const clickedNode = items.find(item => {
@@ -89,7 +169,7 @@ export function ConnectionsCanvas() {
       const nodeTop = nodePos.y - nodeHeight / 2
       const nodeBottom = nodePos.y + nodeHeight / 2
       
-      return x >= nodeLeft && x <= nodeRight && y >= nodeTop && y <= nodeBottom
+      return worldPos.x >= nodeLeft && worldPos.x <= nodeRight && worldPos.y >= nodeTop && worldPos.y <= nodeBottom
     })
 
     if (clickedNode) {
@@ -98,9 +178,16 @@ export function ConnectionsCanvas() {
 
     isDragging.current = true
     dragStart.current = { x: e.clientX, y: e.clientY }
-  }, [items, connectionsViewport, getNodePosition])
+  }, [items, getNodePosition, screenToWorld, getConnectionPosition, connections, removeNodeConnection, addLogMessage])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    // Update connection drag position
+    if (dragConnection) {
+      const worldPos = screenToWorld(e.clientX, e.clientY)
+      setDragConnection(prev => prev ? { ...prev, currentPos: worldPos } : null)
+      return
+    }
+
     if (!isDragging.current) return
 
     const deltaX = e.clientX - dragStart.current.x
@@ -122,12 +209,46 @@ export function ConnectionsCanvas() {
     }
 
     dragStart.current = { x: e.clientX, y: e.clientY }
-  }, [isDragging, draggedNode, connectionsViewport, getNodePosition, updateNodePosition, updateConnectionsViewport])
+  }, [isDragging, draggedNode, connectionsViewport, getNodePosition, updateNodePosition, updateConnectionsViewport, dragConnection, screenToWorld])
 
-  const handleMouseUp = useCallback(() => {
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
+    // Handle connection completion
+    if (dragConnection) {
+      const worldPos = screenToWorld(e.clientX, e.clientY)
+      
+      // Check if we're dropping on an input connection
+      for (const item of items) {
+        for (const connection of item.connections) {
+          if (connection.direction === 'input') {
+            const connPos = getConnectionPosition(item, connection.id)
+            const distance = Math.sqrt(
+              Math.pow(worldPos.x - connPos.x, 2) + Math.pow(worldPos.y - connPos.y, 2)
+            )
+            
+            if (distance <= 0.08) { // Drop zone
+              addNodeConnection(
+                dragConnection.fromNodeId,
+                dragConnection.fromConnectionId,
+                item.id,
+                connection.id
+              )
+              setDragConnection(null)
+              isDragging.current = false
+              draggedNode.current = null
+              return
+            }
+          }
+        }
+      }
+      
+      // No valid drop target found
+      setDragConnection(null)
+      addLogMessage('info', 'Connection cancelled - drop on an input to connect')
+    }
+
     isDragging.current = false
     draggedNode.current = null
-  }, [])
+  }, [dragConnection, screenToWorld, items, getConnectionPosition, addNodeConnection, addLogMessage])
 
   useEffect(() => {
     const svg = svgRef.current
@@ -161,6 +282,70 @@ export function ConnectionsCanvas() {
       svg.removeEventListener('wheel', handleWheelNative)
     }
   }, [connectionsViewport, updateConnectionsViewport])
+
+  // Helper to create curved connection path
+  const createCurvedPath = useCallback((startPos: { x: number, y: number }, endPos: { x: number, y: number }) => {
+    const dx = endPos.x - startPos.x
+    const controlOffset = Math.max(0.5, Math.abs(dx) * 0.3)
+    
+    const cp1x = startPos.x + controlOffset
+    const cp1y = startPos.y
+    const cp2x = endPos.x - controlOffset
+    const cp2y = endPos.y
+    
+    return `M ${startPos.x} ${startPos.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endPos.x} ${endPos.y}`
+  }, [])
+
+  // Render existing connections
+  const renderConnections = useCallback(() => {
+    return connections.map(conn => {
+      const fromItem = items.find(item => item.id === conn.fromNodeId)
+      const toItem = items.find(item => item.id === conn.toNodeId)
+      
+      if (!fromItem || !toItem) return null
+      
+      const startPos = getConnectionPosition(fromItem, conn.fromConnectionId)
+      const endPos = getConnectionPosition(toItem, conn.toConnectionId)
+      const path = createCurvedPath(startPos, endPos)
+      
+      return (
+        <g key={conn.id}>
+          <path
+            d={path}
+            stroke="#228be6"
+            strokeWidth={0.03}
+            fill="none"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              removeNodeConnection(conn.id)
+              addLogMessage('info', 'Connection removed')
+            }}
+          />
+          {/* Connection indicator dots */}
+          <circle cx={startPos.x} cy={startPos.y} r={0.02} fill="#228be6" />
+          <circle cx={endPos.x} cy={endPos.y} r={0.02} fill="#228be6" />
+        </g>
+      )
+    })
+  }, [connections, items, getConnectionPosition, createCurvedPath, removeNodeConnection, addLogMessage])
+
+  // Render drag connection
+  const renderDragConnection = useCallback(() => {
+    if (!dragConnection) return null
+    
+    const path = createCurvedPath(dragConnection.startPos, dragConnection.currentPos)
+    
+    return (
+      <path
+        d={path}
+        stroke="#fa5252"
+        strokeWidth={0.03}
+        fill="none"
+        strokeDasharray="0.1 0.05"
+        opacity={0.7}
+      />
+    )
+  }, [dragConnection, createCurvedPath])
 
   const renderNode = (item: StudioItem) => {
     const nodePos = getNodePosition(item.id)
@@ -336,6 +521,8 @@ export function ConnectionsCanvas() {
         onMouseLeave={handleMouseUp}
       >
         {renderGrid()}
+        {renderConnections()}
+        {renderDragConnection()}
         {items.map(renderNode)}
       </svg>
     </div>

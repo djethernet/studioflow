@@ -4,8 +4,12 @@ export interface Dimensions {
 }
 
 export interface Connection {
+  id: string                           // Unique identifier for this connection
   name: string
   direction: 'input' | 'output'
+  physical: 'XLR' | '1/4' | '1/8' | 'MIDI' | 'USB' | 'TRS' | 'RCA'  // Physical connector type
+  category: 'unbalanced' | 'balanced' | 'digital' | 'midi'           // Signal category
+  way: 'port' | 'socket'               // Port (male) or socket (female)
   group?: string
 }
 
@@ -54,4 +58,13 @@ export interface Viewport {
   offsetX: number
   offsetY: number
   zoom: number
+}
+
+// Connection between two nodes in the connections view
+export interface NodeConnection {
+  id: string
+  fromNodeId: string
+  fromConnectionId: string
+  toNodeId: string
+  toConnectionId: string
 }

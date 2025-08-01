@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { LibraryItem, StudioItem, Viewport } from '../types/StudioItem'
+import type { LibraryItem, StudioItem, Viewport, NodeConnection } from '../types/StudioItem'
 import type { LogMessage, LogLevel } from '../components/LogPanel'
 
 type StudioState = {
@@ -19,6 +19,7 @@ type StudioState = {
   // Connections view state
   connectionsViewport: Viewport
   nodePositions: Map<string, { x: number, y: number }>
+  nodeConnections: NodeConnection[]
   
   // Log panel state
   logMessages: LogMessage[]
@@ -44,6 +45,12 @@ type StudioState = {
   updateNodePosition: (itemId: string, x: number, y: number) => void
   updateConnectionsViewport: (viewport: Partial<Viewport>) => void
   
+  // Node connection actions
+  addNodeConnection: (fromNodeId: string, fromConnectionId: string, toNodeId: string, toConnectionId: string) => boolean
+  removeNodeConnection: (connectionId: string) => void
+  getNodeConnections: () => NodeConnection[]
+  validateConnection: (fromNodeId: string, fromConnectionId: string, toNodeId: string, toConnectionId: string) => { valid: boolean, reason?: string }
+  
   // Viewport actions
   updateViewport: (viewport: Partial<Viewport>) => void
   
@@ -60,8 +67,8 @@ const sampleLibraryItems: LibraryItem[] = [
     name: 'Genelec 1031A',
     dimensions: { width: 0.3, height: 0.5 },
     connections: [
-      { name: 'XLR Input', direction: 'input' },
-      { name: 'TRS Input', direction: 'input' }
+      { id: 'genelec-xlr-in', name: 'XLR Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'genelec-trs-in', name: 'TRS Input', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' }
     ],
     category: 'Speakers',
     icon: '/src/assets/library_images/genelec_1031a.jpg'
@@ -71,11 +78,11 @@ const sampleLibraryItems: LibraryItem[] = [
     name: 'MOTU 828',
     dimensions: { width: 0.4, height: 0.2 },
     connections: [
-      { name: 'Mic Input 1', direction: 'input' },
-      { name: 'Mic Input 2', direction: 'input' },
-      { name: 'Line Out L', direction: 'output' },
-      { name: 'Line Out R', direction: 'output' },
-      { name: 'Headphone Out', direction: 'output' }
+      { id: 'motu-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'motu-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'motu-out-l', name: 'Line Out L', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out-r', name: 'Line Out R', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-hp', name: 'Headphone Out', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' }
     ],
     category: 'Interface',
     icon: '/src/assets/library_images/motu_828.jpg'
@@ -85,10 +92,10 @@ const sampleLibraryItems: LibraryItem[] = [
     name: 'Roland JP-8000',
     dimensions: { width: 1.2, height: 0.4 },
     connections: [
-      { name: 'Audio Out L', direction: 'output' },
-      { name: 'Audio Out R', direction: 'output' },
-      { name: 'MIDI In', direction: 'input' },
-      { name: 'MIDI Out', direction: 'output' }
+      { id: 'jp8000-audio-l', name: 'Audio Out L', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'port' },
+      { id: 'jp8000-audio-r', name: 'Audio Out R', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'port' },
+      { id: 'jp8000-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
+      { id: 'jp8000-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' }
     ],
     category: 'Synth',
     icon: '/src/assets/library_images/roland_jp8000.jpg'
@@ -98,12 +105,12 @@ const sampleLibraryItems: LibraryItem[] = [
     name: 'Yamaha O2R',
     dimensions: { width: 1.8, height: 0.8 },
     connections: [
-      { name: 'Ch1 Input', direction: 'input' },
-      { name: 'Ch2 Input', direction: 'input' },
-      { name: 'Ch3 Input', direction: 'input' },
-      { name: 'Ch4 Input', direction: 'input' },
-      { name: 'Main Out L', direction: 'output' },
-      { name: 'Main Out R', direction: 'output' }
+      { id: 'o2r-ch1', name: 'Ch1 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'o2r-ch2', name: 'Ch2 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'o2r-ch3', name: 'Ch3 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'o2r-ch4', name: 'Ch4 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'o2r-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
+      { id: 'o2r-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' }
     ],
     category: 'Mixer',
     icon: '/src/assets/library_images/yamaha_o2r.jpg'
@@ -128,6 +135,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     zoom: 80 // Default zoom for connections view
   },
   nodePositions: new Map(),
+  nodeConnections: [],
   logMessages: [],
   
   // Library actions
@@ -275,5 +283,97 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     logMessages: state.logMessages.filter(msg => msg.id !== id)
   })),
   
-  clearAllLogs: () => set({ logMessages: [] })
+  clearAllLogs: () => set({ logMessages: [] }),
+  
+  // Node connection actions
+  validateConnection: (fromNodeId, fromConnectionId, toNodeId, toConnectionId) => {
+    const { studioItems } = get()
+    
+    const fromNode = studioItems.find(item => item.id === fromNodeId)
+    const toNode = studioItems.find(item => item.id === toNodeId)
+    
+    if (!fromNode || !toNode) {
+      return { valid: false, reason: 'Node not found' }
+    }
+    
+    const fromConnection = fromNode.connections.find(conn => conn.id === fromConnectionId)
+    const toConnection = toNode.connections.find(conn => conn.id === toConnectionId)
+    
+    if (!fromConnection || !toConnection) {
+      return { valid: false, reason: 'Connection not found' }
+    }
+    
+    // Must connect output to input
+    if (fromConnection.direction !== 'output' || toConnection.direction !== 'input') {
+      return { valid: false, reason: 'Must connect output to input' }
+    }
+    
+    // Same node connection not allowed
+    if (fromNodeId === toNodeId) {
+      return { valid: false, reason: 'Cannot connect to same device' }
+    }
+    
+    // Check category compatibility
+    const { category: fromCat } = fromConnection
+    const { category: toCat } = toConnection
+    
+    // Exact category match is always valid
+    if (fromCat === toCat) {
+      return { valid: true }
+    }
+    
+    // Special conversion cases
+    if (fromCat === 'unbalanced' && toCat === 'balanced') {
+      return { valid: true } // Unbalanced can convert to balanced
+    }
+    
+    if (fromCat === 'balanced' && toCat === 'unbalanced') {
+      return { valid: true } // Balanced can convert to unbalanced (with adapters)
+    }
+    
+    return { valid: false, reason: `Cannot connect ${fromCat} to ${toCat}` }
+  },
+  
+  addNodeConnection: (fromNodeId, fromConnectionId, toNodeId, toConnectionId) => {
+    const validation = get().validateConnection(fromNodeId, fromConnectionId, toNodeId, toConnectionId)
+    
+    if (!validation.valid) {
+      get().addLogMessage('error', `Connection failed: ${validation.reason}`)
+      return false
+    }
+    
+    // Check if connection already exists
+    const existingConnection = get().nodeConnections.find(conn => 
+      conn.toNodeId === toNodeId && conn.toConnectionId === toConnectionId
+    )
+    
+    if (existingConnection) {
+      get().addLogMessage('warning', 'Connection already exists to this input')
+      return false
+    }
+    
+    const newConnection: NodeConnection = {
+      id: uuidv4(),
+      fromNodeId,
+      fromConnectionId,
+      toNodeId,
+      toConnectionId
+    }
+    
+    set((state) => ({
+      nodeConnections: [...state.nodeConnections, newConnection]
+    }))
+    
+    get().addLogMessage('success', 'Connection created successfully')
+    return true
+  },
+  
+  removeNodeConnection: (connectionId) => set((state) => ({
+    nodeConnections: state.nodeConnections.filter(conn => conn.id !== connectionId)
+  })),
+  
+  getNodeConnections: () => {
+    const { nodeConnections } = get()
+    return nodeConnections
+  }
 }))

@@ -1,8 +1,8 @@
 import { Box, Paper, Text, ActionIcon, Group, ScrollArea } from '@mantine/core';
-import { IconX, IconAlertTriangle, IconInfoCircle, IconCircleCheck } from '@tabler/icons-react';
+import { IconX, IconAlertTriangle, IconInfoCircle, IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react';
 import { useStudioStore } from '../stores/studioStore';
 
-export type LogLevel = 'info' | 'warning' | 'success';
+export type LogLevel = 'info' | 'warning' | 'success' | 'error';
 
 export interface LogMessage {
   id: string;
@@ -20,6 +20,8 @@ const LogPanel = () => {
         return <IconAlertTriangle size={16} color="orange" />;
       case 'success':
         return <IconCircleCheck size={16} color="green" />;
+      case 'error':
+        return <IconExclamationCircle size={16} color="red" />;
       case 'info':
       default:
         return <IconInfoCircle size={16} color="blue" />;
@@ -32,6 +34,8 @@ const LogPanel = () => {
         return 'orange';
       case 'success':
         return 'green';
+      case 'error':
+        return 'red';
       case 'info':
       default:
         return 'blue';
