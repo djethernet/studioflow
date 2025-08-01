@@ -106,14 +106,14 @@ export function ConnectionsCanvas() {
       const inputConnections = item.connections.filter(conn => conn.direction === 'input')
       const index = inputConnections.findIndex(conn => conn.id === connectionId)
       return {
-        x: x + 0.08,
+        x: x + 0.15,
         y: y + 0.6 + (index * 0.25)
       }
     } else {
       const outputConnections = item.connections.filter(conn => conn.direction === 'output')
       const index = outputConnections.findIndex(conn => conn.id === connectionId)
       return {
-        x: x + nodeWidth - 0.08,
+        x: x + nodeWidth - 0.15,
         y: y + 0.6 + (index * 0.25)
       }
     }
@@ -131,7 +131,7 @@ export function ConnectionsCanvas() {
           Math.pow(worldPos.x - connPos.x, 2) + Math.pow(worldPos.y - connPos.y, 2)
         )
         
-        if (distance <= 0.06) { // Slightly larger hit area than circle radius
+        if (distance <= 0.12) { // Slightly larger hit area than circle radius (0.08 + margin)
           if (connection.direction === 'output') {
             // Start dragging a new connection from output
             setDragConnection({
@@ -230,7 +230,7 @@ export function ConnectionsCanvas() {
               Math.pow(worldPos.x - connPos.x, 2) + Math.pow(worldPos.y - connPos.y, 2)
             )
             
-            if (distance <= 0.08) { // Drop zone
+            if (distance <= 0.16) { // Drop zone (larger to match bigger circles)
               addNodeConnection(
                 dragConnection.fromNodeId,
                 dragConnection.fromConnectionId,
@@ -318,7 +318,7 @@ export function ConnectionsCanvas() {
           <path
             d={path}
             stroke="#228be6"
-            strokeWidth={0.03}
+            strokeWidth={0.04}
             fill="none"
             style={{ cursor: 'pointer' }}
             onClick={() => {
@@ -327,8 +327,8 @@ export function ConnectionsCanvas() {
             }}
           />
           {/* Connection indicator dots */}
-          <circle cx={startPos.x} cy={startPos.y} r={0.02} fill="#228be6" />
-          <circle cx={endPos.x} cy={endPos.y} r={0.02} fill="#228be6" />
+          <circle cx={startPos.x} cy={startPos.y} r={0.04} fill="#228be6" />
+          <circle cx={endPos.x} cy={endPos.y} r={0.04} fill="#228be6" />
         </g>
       )
     })
@@ -344,7 +344,7 @@ export function ConnectionsCanvas() {
       <path
         d={path}
         stroke="#fa5252"
-        strokeWidth={0.03}
+        strokeWidth={0.04}
         fill="none"
         strokeDasharray="0.1 0.05"
         opacity={0.7}
@@ -395,7 +395,7 @@ export function ConnectionsCanvas() {
           y={y + 0.2}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={0.15}
+          fontSize={0.3}
           fill="#495057"
           fontWeight="600"
           style={{ userSelect: 'none', pointerEvents: 'none' }}
@@ -410,20 +410,20 @@ export function ConnectionsCanvas() {
             <g key={`input-${index}`}>
               {/* Connection circle */}
               <circle
-                cx={x + 0.08}
+                cx={x + 0.15}
                 cy={inputY}
-                r={0.04}
+                r={0.08}
                 fill="#228be6"
                 stroke="#1971c2"
-                strokeWidth={0.01}
+                strokeWidth={0.02}
               />
               {/* Connection name */}
               <text
-                x={x + 0.18}
+                x={x + 0.35}
                 y={inputY}
                 textAnchor="start"
                 dominantBaseline="middle"
-                fontSize={0.1}
+                fontSize={0.2}
                 fill="#495057"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
@@ -440,20 +440,20 @@ export function ConnectionsCanvas() {
             <g key={`output-${index}`}>
               {/* Connection circle */}
               <circle
-                cx={x + nodeWidth - 0.08}
+                cx={x + nodeWidth - 0.15}
                 cy={outputY}
-                r={0.04}
+                r={0.08}
                 fill="#fa5252"
                 stroke="#e03131"
-                strokeWidth={0.01}
+                strokeWidth={0.02}
               />
               {/* Connection name */}
               <text
-                x={x + nodeWidth - 0.18}
+                x={x + nodeWidth - 0.35}
                 y={outputY}
                 textAnchor="end"
                 dominantBaseline="middle"
-                fontSize={0.1}
+                fontSize={0.2}
                 fill="#495057"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
