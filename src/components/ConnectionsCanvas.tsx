@@ -79,7 +79,10 @@ export function ConnectionsCanvas() {
     const clickedNode = items.find(item => {
       const nodePos = getNodePosition(item.id)
       const nodeWidth = 3 // Node width in world units
-      const nodeHeight = 2 // Node height in world units
+      const inputCount = item.connections.filter(conn => conn.direction === 'input').length
+      const outputCount = item.connections.filter(conn => conn.direction === 'output').length
+      const maxConnections = Math.max(inputCount, outputCount, 1)
+      const nodeHeight = Math.max(2, 0.8 + (maxConnections * 0.25))
       
       const nodeLeft = nodePos.x - nodeWidth / 2
       const nodeRight = nodePos.x + nodeWidth / 2
@@ -162,7 +165,10 @@ export function ConnectionsCanvas() {
   const renderNode = (item: StudioItem) => {
     const nodePos = getNodePosition(item.id)
     const nodeWidth = 3
-    const nodeHeight = 2
+    const inputCount = item.connections.filter(conn => conn.direction === 'input').length
+    const outputCount = item.connections.filter(conn => conn.direction === 'output').length
+    const maxConnections = Math.max(inputCount, outputCount, 1)
+    const nodeHeight = Math.max(2, 0.8 + (maxConnections * 0.25))
     const x = nodePos.x - nodeWidth / 2
     const y = nodePos.y - nodeHeight / 2
     
@@ -206,29 +212,63 @@ export function ConnectionsCanvas() {
           {item.name}
         </text>
         
-        {/* Input connections placeholder */}
-        <text
-          x={x + 0.2}
-          y={y + 0.8}
-          textAnchor="start"
-          dominantBaseline="middle"
-          fontSize={0.12}
-          fill="#6c757d"
-        >
-          Inputs →
-        </text>
+        {/* Input connections */}
+        {item.connections.filter(conn => conn.direction === 'input').map((connection, index) => {
+          const inputY = y + 0.6 + (index * 0.25)
+          return (
+            <g key={`input-${index}`}>
+              {/* Connection circle */}
+              <circle
+                cx={x + 0.08}
+                cy={inputY}
+                r={0.04}
+                fill="#228be6"
+                stroke="#1971c2"
+                strokeWidth={0.01}
+              />
+              {/* Connection name */}
+              <text
+                x={x + 0.18}
+                y={inputY}
+                textAnchor="start"
+                dominantBaseline="middle"
+                fontSize={0.1}
+                fill="#495057"
+              >
+                {connection.name}
+              </text>
+            </g>
+          )
+        })}
         
-        {/* Output connections placeholder */}
-        <text
-          x={x + nodeWidth - 0.2}
-          y={y + 0.8}
-          textAnchor="end"
-          dominantBaseline="middle"
-          fontSize={0.12}
-          fill="#6c757d"
-        >
-          ← Outputs
-        </text>
+        {/* Output connections */}
+        {item.connections.filter(conn => conn.direction === 'output').map((connection, index) => {
+          const outputY = y + 0.6 + (index * 0.25)
+          return (
+            <g key={`output-${index}`}>
+              {/* Connection circle */}
+              <circle
+                cx={x + nodeWidth - 0.08}
+                cy={outputY}
+                r={0.04}
+                fill="#fa5252"
+                stroke="#e03131"
+                strokeWidth={0.01}
+              />
+              {/* Connection name */}
+              <text
+                x={x + nodeWidth - 0.18}
+                y={outputY}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fontSize={0.1}
+                fill="#495057"
+              >
+                {connection.name}
+              </text>
+            </g>
+          )
+        })}
       </g>
     )
   }
