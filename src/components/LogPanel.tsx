@@ -43,7 +43,16 @@ const LogPanel = () => {
   }
 
   return (
-    <Paper withBorder p="xs" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+    <Paper withBorder p="xs" style={{ 
+      position: 'fixed', 
+      bottom: 0, 
+      left: '50%', 
+      transform: 'translateX(-50%)', 
+      width: '33%', 
+      minWidth: '300px',
+      maxWidth: '500px',
+      zIndex: 100 
+    }}>
       <Group justify="space-between" mb="xs">
         <Text size="sm" fw={500}>Messages</Text>
         {logMessages.length > 1 && (
