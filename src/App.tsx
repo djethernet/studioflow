@@ -3,6 +3,7 @@ import { Tabs } from '@mantine/core'
 import { LibraryPanel } from './components/LibraryPanel'
 import { Canvas } from './components/Canvas'
 import { ConnectionsCanvas } from './components/ConnectionsCanvas'
+import LogPanel from './components/LogPanel'
 
 function App() {
   const [activeTab, setActiveTab] = useState<string | null>('layout')
@@ -24,6 +25,7 @@ function App() {
           <ConnectionsCanvas />
         </Tabs.Panel>
       </Tabs>
+      <LogPanel />
     </div>
   )
 }

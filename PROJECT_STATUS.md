@@ -128,7 +128,8 @@ All items now display actual product photos in the properties panel for professi
 **Store Enhancements:**
 - Extend Connection type with:
   - `direction: 'input' | 'output'`
-  - `type: 'XLR' | '1/4' | 'MIDI' | 'USB' | 'Power'`
+  - `physical: 'XLR' | '1/4' | 'MIDI' | 'USB' `  // physical 
+  - `category: 'unbalanced', 'balanced', 'digital', 'midi' ` // category is used later to help know if conversion is possible ie 1/4 to 1/8 adapter.
   - `way: 'port' | 'socket'`
   - `name: string` (e.g., "Midi A", "Microphone", "Key")
 - Add `nodePositions` map for connection view placement

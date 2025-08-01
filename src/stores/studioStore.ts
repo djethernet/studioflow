@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { LibraryItem, StudioItem, Viewport } from '../types/StudioItem'
+import type { LogMessage, LogLevel } from '../components/LogPanel'
 
 type StudioState = {
   // Library templates (read-only gear definitions)
@@ -18,6 +19,9 @@ type StudioState = {
   // Connections view state
   connectionsViewport: Viewport
   nodePositions: Map<string, { x: number, y: number }>
+  
+  // Log panel state
+  logMessages: LogMessage[]
   
   // Library actions
   setSelectedLibraryItem: (item: LibraryItem | null) => void
@@ -42,6 +46,11 @@ type StudioState = {
   
   // Viewport actions
   updateViewport: (viewport: Partial<Viewport>) => void
+  
+  // Log panel actions
+  addLogMessage: (level: LogLevel, message: string) => void
+  clearLogMessage: (id: string) => void
+  clearAllLogs: () => void
 }
 
 // Sample library data (templates)
@@ -119,6 +128,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     zoom: 80 // Default zoom for connections view
   },
   nodePositions: new Map(),
+  logMessages: [],
   
   // Library actions
   setSelectedLibraryItem: (item) => set({ selectedLibraryItem: item }),
@@ -244,5 +254,26 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   // Viewport actions
   updateViewport: (newViewport) => set((state) => ({
     viewport: { ...state.viewport, ...newViewport }
-  }))
+  })),
+  
+  // Log panel actions
+  addLogMessage: (level, message) => set((state) => {
+    const newLogMessage: LogMessage = {
+      id: uuidv4(),
+      level,
+      message,
+      timestamp: new Date()
+    }
+    
+    // Keep only last 10 messages to prevent memory bloat
+    const updatedMessages = [...state.logMessages, newLogMessage].slice(-10)
+    
+    return { logMessages: updatedMessages }
+  }),
+  
+  clearLogMessage: (id) => set((state) => ({
+    logMessages: state.logMessages.filter(msg => msg.id !== id)
+  })),
+  
+  clearAllLogs: () => set({ logMessages: [] })
 }))

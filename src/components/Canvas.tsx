@@ -9,7 +9,8 @@ export function Canvas() {
     updateViewport, 
     selectStudioItem, 
     updateStudioItemPosition, 
-    addStudioItem 
+    addStudioItem,
+    addLogMessage 
   } = useStudioStore()
   const items = getCanvasItems()
   const svgRef = useRef<SVGSVGElement>(null)
@@ -172,11 +173,27 @@ export function Canvas() {
       const worldX = viewBoxX + (normalizedX * viewBoxWidth)
       const worldY = viewBoxY + (normalizedY * viewBoxHeight)
       
+      // Check for overlapping items
+      const hasOverlap = items.some(item => {
+        const dx = Math.abs(item.position.x - worldX)
+        const dy = Math.abs(item.position.y - worldY)
+        const minDistanceX = (item.dimensions.width + gearItem.dimensions.width) / 2
+        const minDistanceY = (item.dimensions.height + gearItem.dimensions.height) / 2
+        return dx < minDistanceX && dy < minDistanceY
+      })
+      
       addStudioItem(gearItem, worldX, worldY)
+      
+      if (hasOverlap) {
+        addLogMessage('warning', `${gearItem.name} may overlap with existing equipment`)
+      } else {
+        addLogMessage('success', `Added ${gearItem.name} to canvas`)
+      }
     } catch (error) {
       console.error('Failed to parse dropped item:', error)
+      addLogMessage('warning', 'Failed to add item to canvas - invalid data')
     }
-  }, [viewport, addStudioItem])
+  }, [viewport, addStudioItem, addLogMessage, items])
 
   const renderItem = (item: StudioItem) => {
     const x = item.position.x - item.dimensions.width / 2
