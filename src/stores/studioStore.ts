@@ -354,8 +354,17 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       return false
     }
     
+    // Generate cable name based on connected devices and connection types
+    const { studioItems } = get()
+    const fromNode = studioItems.find(item => item.id === fromNodeId)
+    const toNode = studioItems.find(item => item.id === toNodeId)
+    const fromConnection = fromNode?.connections.find(conn => conn.id === fromConnectionId)
+    
+    const cableName = `${fromNode?.name} → ${toNode?.name} (${fromConnection?.physical})`
+    
     const newConnection: NodeConnection = {
       id: uuidv4(),
+      name: cableName,
       fromNodeId,
       fromConnectionId,
       toNodeId,

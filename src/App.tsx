@@ -3,6 +3,7 @@ import { Tabs } from '@mantine/core'
 import { LibraryPanel } from './components/LibraryPanel'
 import { Canvas } from './components/Canvas'
 import { ConnectionsCanvas } from './components/ConnectionsCanvas'
+import { EquipmentPanel } from './components/EquipmentPanel'
 import LogPanel from './components/LogPanel'
 
 function App() {
@@ -19,10 +20,12 @@ function App() {
         <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex' }}>
           <LibraryPanel />
           <Canvas />
+          <EquipmentPanel />
         </Tabs.Panel>
 
         <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex' }}>
           <ConnectionsCanvas />
+          <EquipmentPanel showConnections={true} />
         </Tabs.Panel>
       </Tabs>
       <LogPanel />

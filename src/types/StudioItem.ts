@@ -63,6 +63,7 @@ export interface Viewport {
 // Connection between two nodes in the connections view
 export interface NodeConnection {
   id: string
+  name: string
   fromNodeId: string
   fromConnectionId: string
   toNodeId: string
