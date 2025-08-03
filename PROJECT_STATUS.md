@@ -106,27 +106,25 @@ All items now display actual product photos in the properties panel for professi
 - **Producers building $10K+ studios** - Need desk/rack layout, ergonomics, routing logic  
 - **Music/audio schools** - Need classroom studio planning and team communication
 
-## Next Phase Goals
+## Unimplemented Required Features
 
-### Phase 2B - Professional Export Tools (High Priority)
+### Professional Export Tools (High Priority)
 1. **Bill of Materials (BOM) Export**
    - Cable list with types, lengths, and quantities
    - Gear list with specifications and quantities
    - Export formats: CSV, PDF, professional reports
    - Cost estimation integration (future: Sweetwater API)
-
 2. **Project Management**
    - Save/load studio projects as JSON
    - Project metadata (name, description, created date)
    - Export capabilities (PNG layout diagrams, connection diagrams)
 
-### Phase 2C - Enhanced Professional Features (Medium Priority)
+### Enhanced Professional Features (Medium Priority)
 1. **Advanced Canvas Features**
    - Item rotation and snapping to grid
    - Multi-select and group operations
    - Copy/paste functionality
    - Undo/redo system
-
 2. **3D Preview**
    - Simple non-editable 3D visualization using Three.js
    - Room perspective with gear placement
@@ -194,4 +192,38 @@ All items now display actual product photos in the properties panel for professi
 
 **🎯 CORE DIFFERENTIATOR ACHIEVED**: StudioFlow now has the visual cable routing system that transforms it from a generic layout tool into a professional studio planning solution.
 
-**Next Priority Phase 2B**: Export tools (BOM generation, project save/load) to complete the professional workflow.
+## Current Development: Equipment Panel System
+
+### Phase 1: Add Connection Names ⏳ IN PROGRESS
+- Add `name` property to `NodeConnection` type for cable identification
+- Update connection creation to include auto-generated cable names
+- Update store validation and creation logic
+
+### Phase 2: Create EquipmentPanel Component 📋 PLANNED
+- Build new `EquipmentPanel` component with vertical splitter layout
+- Top section: Equipment list (shows all studio items + connections)
+- Bottom section: Properties panel for selected item
+- Use Mantine's layout components for professional UI
+
+### Phase 3: Integrate into Equipment Tab (Layout) 📋 PLANNED
+- Add `EquipmentPanel` to the right side of Equipment tab
+- Equipment list shows all studio items in the project
+- Properties panel displays gear details when selected
+
+### Phase 4: Integrate into Connections Tab 📋 PLANNED
+- Add `EquipmentPanel` to the right side of Connections tab
+- Equipment list includes both gear items AND connections (by name)
+- Properties panel shows connection details when cable selected
+
+### Phase 5: Selection Synchronization 📋 PLANNED
+- Implement unified selection system across all views
+- Selecting in equipment list highlights in layout/connections view
+- Selecting in layout/connections updates equipment list selection
+- Single source of truth for selected item
+
+### Phase 6: Properties Panel Display 📋 PLANNED
+- Show item image, name, dimensions, connections list
+- Display connection details for selected cables
+- Professional layout similar to current gear library properties
+
+**Next Priority**: Complete Equipment Panel system to provide comprehensive project overview and detailed item inspection capabilities.

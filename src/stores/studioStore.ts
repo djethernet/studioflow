@@ -82,7 +82,9 @@ const sampleLibraryItems: LibraryItem[] = [
       { id: 'motu-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'motu-out-l', name: 'Line Out L', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
       { id: 'motu-out-r', name: 'Line Out R', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-hp', name: 'Headphone Out', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' }
+      { id: 'motu-hp', name: 'Headphone Out', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
+      { id: 'motu-midi-in-a', name: 'MIDI A In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
+      { id: 'motu-midi-in-b', name: 'MIDI B In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
     ],
     category: 'Interface',
     icon: '/src/assets/library_images/motu_828.jpg'
