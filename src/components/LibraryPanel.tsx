@@ -1,5 +1,6 @@
-import { Box, Text, TextInput, ScrollArea, Group, Stack, Paper, Divider, Image } from '@mantine/core'
+import { Box, Text, TextInput, ScrollArea, Stack, Paper, Divider } from '@mantine/core'
 import { useStudioStore } from '../stores/studioStore'
+import { PropertiesPanel } from './PropertiesPanel'
 import type { LibraryItem } from '../types/StudioItem'
 
 export function LibraryPanel() {
@@ -54,42 +55,12 @@ export function LibraryPanel() {
         
         <Divider />
         
-        <Box>
-          {selectedLibraryItem ? (
-            <Stack gap="xs">
-              <Group gap="md" align="flex-start">
-                <Image 
-                  src={selectedLibraryItem.icon} 
-                  alt={selectedLibraryItem.name}
-                  w={80}
-                  h={60}
-                  fit="cover"
-                  radius="sm"
-                />
-                <Stack gap="xs" style={{ flex: 1 }}>
-                  <Text size="md" fw={600}>{selectedLibraryItem.name}</Text>
-                  <Text size="sm">
-                    <Text span fw={500}>Size:</Text> {selectedLibraryItem.dimensions.width}m × {selectedLibraryItem.dimensions.height}m
-                  </Text>
-                  <Text size="sm">
-                    <Text span fw={500}>Inputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'input').length}
-                  </Text>
-                  <Text size="sm">
-                    <Text span fw={500}>Outputs:</Text> {selectedLibraryItem.connections.filter(c => c.direction === 'output').length}
-                  </Text>
-                  {selectedLibraryItem.category && (
-                    <Text size="sm">
-                      <Text span fw={500}>Category:</Text> {selectedLibraryItem.category}
-                    </Text>
-                  )}
-                </Stack>
-              </Group>
-            </Stack>
-          ) : (
-            <Text size="sm" c="dimmed">
-              Select an item to view its properties
-            </Text>
-          )}
+        <Box style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Text fw={600} mb="sm">Properties</Text>
+          <PropertiesPanel
+            selectedLibraryItem={selectedLibraryItem || undefined}
+            allowNameEditing={false}
+          />
         </Box>
       </Stack>
     </Paper>

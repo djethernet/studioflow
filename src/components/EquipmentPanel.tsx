@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Paper, Text, Group, Stack, Image, Divider, Badge, ScrollArea, TextInput, ActionIcon } from '@mantine/core'
-import { IconEdit, IconCheck, IconX } from '@tabler/icons-react'
+import { Paper, Text, Group, Stack, Divider, Badge, ScrollArea } from '@mantine/core'
 import { useStudioStore } from '../stores/studioStore'
+import { PropertiesPanel } from './PropertiesPanel'
 import type { StudioItem, NodeConnection } from '../types/StudioItem'
 
 interface EquipmentPanelProps {
@@ -19,8 +19,6 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null)
   const [splitHeight, setSplitHeight] = useState(50) // Percentage for equipment list
-  const [isEditingName, setIsEditingName] = useState(false)
-  const [editingName, setEditingName] = useState('')
 
   const studioItems = getAllStudioItems()
   const connections = getNodeConnections()
@@ -32,33 +30,11 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
   const handleItemSelect = (item: StudioItem) => {
     selectStudioItem(item.id)
     setSelectedConnectionId(null) // Clear connection selection
-    setIsEditingName(false) // Clear editing state
-    setEditingName('')
   }
 
   const handleConnectionSelect = (connection: NodeConnection) => {
     setSelectedConnectionId(connection.id)
     selectStudioItem(null) // Clear item selection
-    setIsEditingName(false) // Clear editing state
-    setEditingName('')
-  }
-
-  const handleStartEditName = (item: StudioItem) => {
-    setEditingName(item.name)
-    setIsEditingName(true)
-  }
-
-  const handleSaveName = () => {
-    if (selectedItem && editingName.trim()) {
-      updateStudioItemName(selectedItem.id, editingName.trim())
-    }
-    setIsEditingName(false)
-    setEditingName('')
-  }
-
-  const handleCancelEdit = () => {
-    setIsEditingName(false)
-    setEditingName('')
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -120,7 +96,7 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
                   </Text>
                   {item.isOnCanvas && (
                     <Badge variant="filled" color="green" size="xs">
-                      On Canvas
+                      In Studio
                     </Badge>
                   )}
                 </Group>
@@ -188,125 +164,13 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
         }}
       >
         <Text fw={600} mb="sm">Properties</Text>
-        <ScrollArea style={{ flex: 1 }}>
-          {selectedItem && (
-            <Stack gap="md">
-              {/* Item Image */}
-              {selectedItem.icon && (
-                <Image
-                  src={selectedItem.icon}
-                  alt={selectedItem.name}
-                  h={120}
-                  fit="contain"
-                  style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}
-                />
-              )}
-
-              {/* Basic Info */}
-              <div>
-                {isEditingName ? (
-                  <Group gap="xs" mb="xs">
-                    <TextInput
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.currentTarget.value)}
-                      size="sm"
-                      style={{ flex: 1 }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSaveName()
-                        if (e.key === 'Escape') handleCancelEdit()
-                      }}
-                      autoFocus
-                    />
-                    <ActionIcon color="green" size="sm" onClick={handleSaveName}>
-                      <IconCheck size={14} />
-                    </ActionIcon>
-                    <ActionIcon color="red" size="sm" onClick={handleCancelEdit}>
-                      <IconX size={14} />
-                    </ActionIcon>
-                  </Group>
-                ) : (
-                  <Group gap="xs" mb="xs">
-                    <Text fw={600} size="lg" style={{ flex: 1 }}>{selectedItem.name}</Text>
-                    <ActionIcon size="sm" onClick={() => handleStartEditName(selectedItem)}>
-                      <IconEdit size={14} />
-                    </ActionIcon>
-                  </Group>
-                )}
-                <Text size="sm" fw={500} c="dimmed">{selectedItem.productModel}</Text>
-                <Text size="sm" c="dimmed">{selectedItem.category}</Text>
-              </div>
-
-              {/* Dimensions */}
-              <div>
-                <Text fw={500} size="sm" mb="xs">Dimensions</Text>
-                <Text size="sm">
-                  {selectedItem.dimensions.width}m × {selectedItem.dimensions.height}m
-                </Text>
-              </div>
-
-              {/* Position */}
-              <div>
-                <Text fw={500} size="sm" mb="xs">Position</Text>
-                <Text size="sm">
-                  X: {selectedItem.position.x.toFixed(2)}m, Y: {selectedItem.position.y.toFixed(2)}m
-                </Text>
-              </div>
-
-              {/* Connections */}
-              <div>
-                <Text fw={500} size="sm" mb="xs">Connections ({selectedItem.connections.length})</Text>
-                <Stack gap="xs">
-                  {selectedItem.connections.map((conn) => (
-                    <Paper key={conn.id} p="xs" withBorder>
-                      <Group justify="space-between">
-                        <Text size="xs" fw={500}>{conn.name}</Text>
-                        <Group gap="xs">
-                          <Badge variant="light" color={conn.direction === 'input' ? 'blue' : 'green'} size="xs">
-                            {conn.direction}
-                          </Badge>
-                          <Badge variant="outline" size="xs">
-                            {conn.physical}
-                          </Badge>
-                        </Group>
-                      </Group>
-                    </Paper>
-                  ))}
-                </Stack>
-              </div>
-            </Stack>
-          )}
-
-          {selectedConnection && (
-            <Stack gap="md">
-              {/* Connection Info */}
-              <div>
-                <Text fw={600} size="lg">{selectedConnection.name}</Text>
-                <Text size="sm" c="dimmed">Cable Connection</Text>
-              </div>
-
-              {/* Connection Details */}
-              <div>
-                <Text fw={500} size="sm" mb="xs">Connection Details</Text>
-                <Stack gap="xs">
-                  <Paper p="xs" withBorder>
-                    <Text size="xs" fw={500}>From:</Text>
-                    <Text size="xs">{studioItems.find(item => item.id === selectedConnection.fromNodeId)?.name}</Text>
-                  </Paper>
-                  <Paper p="xs" withBorder>
-                    <Text size="xs" fw={500}>To:</Text>
-                    <Text size="xs">{studioItems.find(item => item.id === selectedConnection.toNodeId)?.name}</Text>
-                  </Paper>
-                </Stack>
-              </div>
-            </Stack>
-          )}
-
-          {!selectedItem && !selectedConnection && (
-            <Text size="sm" c="dimmed" ta="center" py="xl">
-              Select an item to view properties
-            </Text>
-          )}
-        </ScrollArea>
+        <PropertiesPanel
+          selectedItem={selectedItem}
+          selectedConnection={selectedConnection}
+          allowNameEditing={true}
+          onNameUpdate={updateStudioItemName}
+          studioItems={studioItems}
+        />
       </Paper>
     </div>
   )
