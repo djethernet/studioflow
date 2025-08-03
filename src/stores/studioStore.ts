@@ -32,6 +32,7 @@ type StudioState = {
   // Studio item actions
   addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => void
   updateStudioItemPosition: (id: string, x: number, y: number) => void
+  updateStudioItemName: (id: string, name: string) => void
   selectStudioItem: (id: string | null) => void
   removeStudioItem: (id: string) => void
   toggleStudioItemOnCanvas: (id: string) => void
@@ -65,6 +66,7 @@ const sampleLibraryItems: LibraryItem[] = [
   {
     id: 1,
     name: 'Genelec 1031A',
+    productModel: 'Genelec 1031A',
     dimensions: { width: 0.3, height: 0.5 },
     connections: [
       { id: 'genelec-xlr-in', name: 'XLR Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
@@ -76,6 +78,7 @@ const sampleLibraryItems: LibraryItem[] = [
   {
     id: 2,
     name: 'MOTU 828',
+    productModel: 'MOTU 828',
     dimensions: { width: 0.4, height: 0.2 },
     connections: [
       { id: 'motu-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
@@ -92,6 +95,7 @@ const sampleLibraryItems: LibraryItem[] = [
   {
     id: 3,
     name: 'Roland JP-8000',
+    productModel: 'Roland JP-8000',
     dimensions: { width: 1.2, height: 0.4 },
     connections: [
       { id: 'jp8000-audio-l', name: 'Audio Out L', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'port' },
@@ -105,6 +109,7 @@ const sampleLibraryItems: LibraryItem[] = [
   {
     id: 4,
     name: 'Yamaha O2R',
+    productModel: 'Yamaha O2R',
     dimensions: { width: 1.8, height: 0.8 },
     connections: [
       { id: 'o2r-ch1', name: 'Ch1 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
@@ -162,6 +167,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       libraryItemId: libraryItem.id,
       // Copy library data for quick access
       name: libraryItem.name,
+      productModel: libraryItem.productModel,
       dimensions: libraryItem.dimensions,
       connections: libraryItem.connections,
       category: libraryItem.category,
@@ -181,6 +187,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   updateStudioItemPosition: (id, x, y) => set((state) => ({
     studioItems: state.studioItems.map((item) => 
       item.id === id ? { ...item, position: { x, y } } : item
+    )
+  })),
+  
+  updateStudioItemName: (id, name) => set((state) => ({
+    studioItems: state.studioItems.map((item) => 
+      item.id === id ? { ...item, name } : item
     )
   })),
   

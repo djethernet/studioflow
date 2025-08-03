@@ -22,6 +22,7 @@ export interface Position {
 export interface LibraryItem {
   id: number
   name: string
+  productModel: string        // Manufacturer and model (e.g., "SSL Matrix 2")
   dimensions: Dimensions
   connections: Connection[]
   category?: string
@@ -35,7 +36,8 @@ export interface StudioItem {
   libraryItemId: number        // Reference to original library template
   
   // Library data (copied for quick access)
-  name: string
+  name: string                 // User-editable name (e.g., "Mixer 1")
+  productModel: string        // Manufacturer and model (e.g., "SSL Matrix 2")
   dimensions: Dimensions
   connections: Connection[]
   category?: string

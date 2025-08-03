@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Paper, Text, Group, Stack, Image, Divider, Badge, ScrollArea } from '@mantine/core'
+import { Paper, Text, Group, Stack, Image, Divider, Badge, ScrollArea, TextInput, ActionIcon } from '@mantine/core'
+import { IconEdit, IconCheck, IconX } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import type { StudioItem, NodeConnection } from '../types/StudioItem'
 
@@ -12,11 +13,14 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
     getAllStudioItems, 
     getNodeConnections, 
     selectedStudioItemId, 
-    selectStudioItem 
+    selectStudioItem,
+    updateStudioItemName
   } = useStudioStore()
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null)
   const [splitHeight, setSplitHeight] = useState(50) // Percentage for equipment list
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editingName, setEditingName] = useState('')
 
   const studioItems = getAllStudioItems()
   const connections = getNodeConnections()
@@ -28,11 +32,33 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
   const handleItemSelect = (item: StudioItem) => {
     selectStudioItem(item.id)
     setSelectedConnectionId(null) // Clear connection selection
+    setIsEditingName(false) // Clear editing state
+    setEditingName('')
   }
 
   const handleConnectionSelect = (connection: NodeConnection) => {
     setSelectedConnectionId(connection.id)
     selectStudioItem(null) // Clear item selection
+    setIsEditingName(false) // Clear editing state
+    setEditingName('')
+  }
+
+  const handleStartEditName = (item: StudioItem) => {
+    setEditingName(item.name)
+    setIsEditingName(true)
+  }
+
+  const handleSaveName = () => {
+    if (selectedItem && editingName.trim()) {
+      updateStudioItemName(selectedItem.id, editingName.trim())
+    }
+    setIsEditingName(false)
+    setEditingName('')
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditingName(false)
+    setEditingName('')
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -178,7 +204,35 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
 
               {/* Basic Info */}
               <div>
-                <Text fw={600} size="lg">{selectedItem.name}</Text>
+                {isEditingName ? (
+                  <Group gap="xs" mb="xs">
+                    <TextInput
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.currentTarget.value)}
+                      size="sm"
+                      style={{ flex: 1 }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveName()
+                        if (e.key === 'Escape') handleCancelEdit()
+                      }}
+                      autoFocus
+                    />
+                    <ActionIcon color="green" size="sm" onClick={handleSaveName}>
+                      <IconCheck size={14} />
+                    </ActionIcon>
+                    <ActionIcon color="red" size="sm" onClick={handleCancelEdit}>
+                      <IconX size={14} />
+                    </ActionIcon>
+                  </Group>
+                ) : (
+                  <Group gap="xs" mb="xs">
+                    <Text fw={600} size="lg" style={{ flex: 1 }}>{selectedItem.name}</Text>
+                    <ActionIcon size="sm" onClick={() => handleStartEditName(selectedItem)}>
+                      <IconEdit size={14} />
+                    </ActionIcon>
+                  </Group>
+                )}
+                <Text size="sm" fw={500} c="dimmed">{selectedItem.productModel}</Text>
                 <Text size="sm" c="dimmed">{selectedItem.category}</Text>
               </div>
 
