@@ -16,17 +16,23 @@ StudioFlow is a web-based tool for visually designing audio studios, aimed at mu
 ```
 src/
 ├── App.tsx                     # Main app component with tabbed layout
+├── App.css                     # Application styling
 ├── main.tsx                    # Entry point with MantineProvider
+├── index.css                   # Global styles
 ├── components/
 │   ├── LibraryPanel.tsx        # Gear library with search and selection
-│   ├── Canvas.tsx              # Interactive 2D canvas with pan/zoom/drag-drop
-│   └── EquipmentPanel.tsx      # Equipment management with properties display
+│   ├── Canvas.tsx              # Interactive 2D layout canvas with pan/zoom/drag-drop
+│   ├── ConnectionsCanvas.tsx   # Visual node editor for cable routing
+│   ├── EquipmentPanel.tsx      # Equipment management with properties display
+│   ├── LogPanel.tsx            # Connection validation and feedback logging
+│   └── PropertiesPanel.tsx     # Detailed item properties and specifications
 ├── stores/
 │   └── studioStore.ts          # Unified data store (Model-View architecture)
 ├── types/
 │   └── StudioItem.ts           # Core type definitions (Library + Studio items)
 └── assets/
-    └── react.svg
+    ├── react.svg
+    └── library_images/         # Product images for gear library
 ```
 
 ## Completed Features
