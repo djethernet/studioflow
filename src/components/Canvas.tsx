@@ -236,9 +236,9 @@ export function Canvas() {
           />
           <text
             x={0}
-            y={0}
+            y={item.dimensions.height / 2 + 0.15}
             textAnchor="middle"
-            dominantBaseline="middle"
+            dominantBaseline="top"
             fontSize={0.1}
             fill="#333"
           >
