@@ -37,7 +37,7 @@ export function ConnectionsCanvas() {
     const updateDimensions = () => {
       // Use window dimensions and reserve space for UI elements
       // ConnectionsCanvas only has the right panel (no left panel like Canvas)
-      const availableWidth = window.innerWidth - 300 // Account for right equipment panel
+      const availableWidth = window.innerWidth - 350 // Account for right equipment panel (350px)
       const availableHeight = window.innerHeight - 100 // Account for tab header and margins
       setContainerDimensions({ 
         width: Math.max(300, availableWidth), 
