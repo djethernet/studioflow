@@ -21,7 +21,8 @@ export function ConnectionsCanvas() {
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
   const draggedNode = useRef<string | null>(null)
-  const [svgDimensions, setSvgDimensions] = useState({ width: 800, height: 600 })
+  const [containerDimensions, setContainerDimensions] = useState({ width: 800, height: 600 })
+  const containerRef = useRef<HTMLDivElement>(null)
   
   // Connection dragging state
   const [dragConnection, setDragConnection] = useState<{
@@ -31,61 +32,48 @@ export function ConnectionsCanvas() {
     currentPos: { x: number, y: number }
   } | null>(null)
 
-  // Update SVG dimensions when ref becomes available or window resizes
+  // Update container dimensions based on window size to avoid circular dependency
   useEffect(() => {
     const updateDimensions = () => {
-      const rect = svgRef.current?.getBoundingClientRect()
-      if (rect && rect.width > 0 && rect.height > 0) {
-        setSvgDimensions({ width: rect.width, height: rect.height })
-      }
+      // Use window dimensions and reserve space for UI elements
+      const availableWidth = window.innerWidth - 650 // Account for side panels
+      const availableHeight = window.innerHeight - 100 // Account for tab header and margins
+      setContainerDimensions({ 
+        width: Math.max(300, availableWidth), 
+        height: Math.max(200, availableHeight) 
+      })
     }
 
-    // Initial update with delay to ensure DOM is ready
-    const timeoutId = setTimeout(updateDimensions, 50)
-    
-    // Set up resize listener
+    updateDimensions()
     window.addEventListener('resize', updateDimensions)
     
-    // Set up intersection observer to detect when component becomes visible
-    let observer: IntersectionObserver | null = null
-    if (svgRef.current) {
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setTimeout(updateDimensions, 10)
-          }
-        })
-      })
-      observer.observe(svgRef.current)
-    }
-    
     return () => {
-      clearTimeout(timeoutId)
       window.removeEventListener('resize', updateDimensions)
-      if (observer) {
-        observer.disconnect()
-      }
     }
   }, [])
 
-  // Helper to convert screen coordinates to world coordinates
+  // Coordinate transformation utilities
+  const getViewBox = useCallback(() => {
+    const viewBoxWidth = containerDimensions.width / connectionsViewport.zoom
+    const viewBoxHeight = containerDimensions.height / connectionsViewport.zoom
+    const viewBoxX = -connectionsViewport.offsetX / connectionsViewport.zoom
+    const viewBoxY = -connectionsViewport.offsetY / connectionsViewport.zoom
+    return { x: viewBoxX, y: viewBoxY, width: viewBoxWidth, height: viewBoxHeight }
+  }, [containerDimensions, connectionsViewport])
+
   const screenToWorld = useCallback((screenX: number, screenY: number) => {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return { x: 0, y: 0 }
-
+    
     const normalizedX = (screenX - rect.left) / rect.width
     const normalizedY = (screenY - rect.top) / rect.height
     
-    const viewBoxWidth = rect.width / connectionsViewport.zoom
-    const viewBoxHeight = rect.height / connectionsViewport.zoom
-    const viewBoxX = -connectionsViewport.offsetX / connectionsViewport.zoom
-    const viewBoxY = -connectionsViewport.offsetY / connectionsViewport.zoom
+    const viewBox = getViewBox()
+    const worldX = viewBox.x + (normalizedX * viewBox.width)
+    const worldY = viewBox.y + (normalizedY * viewBox.height)
     
-    const x = viewBoxX + (normalizedX * viewBoxWidth)
-    const y = viewBoxY + (normalizedY * viewBoxHeight)
-    
-    return { x, y }
-  }, [connectionsViewport])
+    return { x: worldX, y: worldY }
+  }, [getViewBox])
 
   // Helper to get connection circle position
   const getConnectionPosition = useCallback((item: StudioItem, connectionId: string) => {
@@ -468,17 +456,12 @@ export function ConnectionsCanvas() {
 
   const renderGrid = () => {
     const gridSize = 1 // 1 unit grid for connections view
-    const viewBox = {
-      left: -connectionsViewport.offsetX / connectionsViewport.zoom,
-      top: -connectionsViewport.offsetY / connectionsViewport.zoom,
-      width: svgDimensions.width / connectionsViewport.zoom,
-      height: svgDimensions.height / connectionsViewport.zoom
-    }
+    const viewBox = getViewBox()
 
-    const startX = Math.floor(viewBox.left / gridSize) * gridSize
-    const endX = Math.ceil((viewBox.left + viewBox.width) / gridSize) * gridSize
-    const startY = Math.floor(viewBox.top / gridSize) * gridSize
-    const endY = Math.ceil((viewBox.top + viewBox.height) / gridSize) * gridSize
+    const startX = Math.floor(viewBox.x / gridSize) * gridSize
+    const endX = Math.ceil((viewBox.x + viewBox.width) / gridSize) * gridSize
+    const startY = Math.floor(viewBox.y / gridSize) * gridSize
+    const endY = Math.ceil((viewBox.y + viewBox.height) / gridSize) * gridSize
 
     const lines = []
     
@@ -487,9 +470,9 @@ export function ConnectionsCanvas() {
         <line
           key={`v${x}`}
           x1={x}
-          y1={viewBox.top}
+          y1={viewBox.y}
           x2={x}
-          y2={viewBox.top + viewBox.height}
+          y2={viewBox.y + viewBox.height}
           stroke="#f1f3f4"
           strokeWidth={0.01}
         />
@@ -500,9 +483,9 @@ export function ConnectionsCanvas() {
       lines.push(
         <line
           key={`h${y}`}
-          x1={viewBox.left}
+          x1={viewBox.x}
           y1={y}
-          x2={viewBox.left + viewBox.width}
+          x2={viewBox.x + viewBox.width}
           y2={y}
           stroke="#f1f3f4"
           strokeWidth={0.01}
@@ -513,24 +496,28 @@ export function ConnectionsCanvas() {
     return <g>{lines}</g>
   }
 
-  const viewBoxWidth = svgDimensions.width / connectionsViewport.zoom
-  const viewBoxHeight = svgDimensions.height / connectionsViewport.zoom
+  const viewBox = getViewBox()
 
   return (
-    <div style={{ 
-      flex: 1, 
-      overflow: 'hidden', 
-      cursor: isDragging.current ? 'grabbing' : 'grab',
-      userSelect: 'none',
-      WebkitUserSelect: 'none',
-      MozUserSelect: 'none',
-      msUserSelect: 'none'
-    }}>
+    <div 
+      ref={containerRef}
+      style={{ 
+        width: containerDimensions.width,
+        height: containerDimensions.height,
+        overflow: 'hidden', 
+        cursor: isDragging.current ? 'grabbing' : 'grab',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
+      }}
+    >
       <svg
         ref={svgRef}
-        width="100%"
-        height="100%"
-        viewBox={`${-connectionsViewport.offsetX / connectionsViewport.zoom} ${-connectionsViewport.offsetY / connectionsViewport.zoom} ${viewBoxWidth} ${viewBoxHeight}`}
+        width={containerDimensions.width}
+        height={containerDimensions.height}
+        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
+        preserveAspectRatio="xMidYMid meet"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
