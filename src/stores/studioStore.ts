@@ -30,7 +30,7 @@ type StudioState = {
   getFilteredLibraryItems: () => LibraryItem[]
   
   // Studio item actions
-  addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => void
+  addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => string
   updateStudioItemPosition: (id: string, x: number, y: number) => void
   updateStudioItemRotation: (id: string, rotation: number) => void
   updateStudioItemName: (id: string, name: string) => void
@@ -163,9 +163,10 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   },
   
   // Studio item actions
-  addStudioItem: (libraryItem, x, y, onCanvas = true) => set((state) => {
+  addStudioItem: (libraryItem, x, y, onCanvas = true) => {
+    const newId = uuidv4()
     const newStudioItem: StudioItem = {
-      id: uuidv4(),
+      id: newId,
       libraryItemId: libraryItem.id,
       // Copy library data for quick access
       name: libraryItem.name,
@@ -181,10 +182,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       selected: false
     }
     
-    return {
+    set((state) => ({
       studioItems: [...state.studioItems, newStudioItem]
-    }
-  }),
+    }))
+    
+    return newId
+  },
   
   updateStudioItemPosition: (id, x, y) => set((state) => ({
     studioItems: state.studioItems.map((item) => 

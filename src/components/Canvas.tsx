@@ -203,7 +203,8 @@ export function Canvas() {
         return dx < minDistanceX && dy < minDistanceY
       })
       
-      addStudioItem(gearItem, worldX, worldY)
+      const newItemId = addStudioItem(gearItem, worldX, worldY)
+      selectStudioItem(newItemId)
       
       if (hasOverlap) {
         addLogMessage('warning', `${gearItem.name} may overlap with existing equipment`)
