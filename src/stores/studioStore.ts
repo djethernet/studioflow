@@ -32,6 +32,7 @@ type StudioState = {
   // Studio item actions
   addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => void
   updateStudioItemPosition: (id: string, x: number, y: number) => void
+  updateStudioItemRotation: (id: string, rotation: number) => void
   updateStudioItemName: (id: string, name: string) => void
   selectStudioItem: (id: string | null) => void
   removeStudioItem: (id: string) => void
@@ -43,6 +44,7 @@ type StudioState = {
   
   // Connections view actions
   getNodePosition: (itemId: string) => { x: number, y: number }
+  ensureNodePosition: (itemId: string) => void
   updateNodePosition: (itemId: string, x: number, y: number) => void
   updateConnectionsViewport: (viewport: Partial<Viewport>) => void
   
@@ -189,6 +191,12 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       item.id === id ? { ...item, position: { x, y } } : item
     )
   })),
+
+  updateStudioItemRotation: (id, rotation) => set((state) => ({
+    studioItems: state.studioItems.map((item) => 
+      item.id === id ? { ...item, rotation } : item
+    )
+  })),
   
   updateStudioItemName: (id, name) => set((state) => ({
     studioItems: state.studioItems.map((item) => 
@@ -235,6 +243,18 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       return nodePositions.get(itemId)!
     }
     
+    // Return a default position if not found - don't auto-generate here
+    return { x: 0, y: 0 }
+  },
+
+  ensureNodePosition: (itemId) => {
+    const { nodePositions } = get()
+    
+    // If position already exists, do nothing
+    if (nodePositions.has(itemId)) {
+      return
+    }
+    
     // Auto-generate grid position for new nodes
     const existingPositions = Array.from(nodePositions.values())
     const gridSize = 5 // Grid spacing in world units
@@ -261,8 +281,6 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set((state) => ({
       nodePositions: new Map(state.nodePositions).set(itemId, newPosition)
     }))
-    
-    return newPosition
   },
   
   updateNodePosition: (itemId, x, y) => set((state) => ({

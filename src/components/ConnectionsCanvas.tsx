@@ -8,6 +8,7 @@ export function ConnectionsCanvas() {
     connectionsViewport,
     updateConnectionsViewport,
     getNodePosition,
+    ensureNodePosition,
     updateNodePosition,
     getNodeConnections,
     addNodeConnection,
@@ -52,6 +53,13 @@ export function ConnectionsCanvas() {
       window.removeEventListener('resize', updateDimensions)
     }
   }, [])
+
+  // Ensure all items have node positions
+  useEffect(() => {
+    items.forEach(item => {
+      ensureNodePosition(item.id)
+    })
+  }, [items, ensureNodePosition])
 
   // Coordinate transformation utilities
   const getViewBox = useCallback(() => {

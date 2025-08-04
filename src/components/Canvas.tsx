@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { useStudioStore } from '../stores/studioStore'
 import type { StudioItem } from '../types/StudioItem'
+import { RotationHandle } from './RotationHandle'
 
 export function Canvas() {
   const { 
@@ -9,6 +10,7 @@ export function Canvas() {
     updateViewport, 
     selectStudioItem, 
     updateStudioItemPosition, 
+    updateStudioItemRotation,
     addStudioItem,
     addLogMessage 
   } = useStudioStore()
@@ -17,6 +19,8 @@ export function Canvas() {
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
   const draggedItem = useRef<string | null>(null)
+  const isRotating = useRef(false)
+  const rotatingItem = useRef<string | null>(null)
   const [containerDimensions, setContainerDimensions] = useState({ width: 800, height: 600 })
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -121,6 +125,26 @@ export function Canvas() {
     e?.preventDefault()
     isDragging.current = false
     draggedItem.current = null
+    isRotating.current = false
+    rotatingItem.current = null
+  }, [])
+
+  // Rotation handlers
+  const handleRotationStart = useCallback((itemId: string) => {
+    isRotating.current = true
+    rotatingItem.current = itemId
+    selectStudioItem(itemId)
+  }, [selectStudioItem])
+
+  const handleRotationUpdate = useCallback((itemId: string, angle: number) => {
+    if (isRotating.current && rotatingItem.current === itemId) {
+      updateStudioItemRotation(itemId, angle)
+    }
+  }, [updateStudioItemRotation])
+
+  const handleRotationEnd = useCallback(() => {
+    isRotating.current = false
+    rotatingItem.current = null
   }, [])
 
 
@@ -193,31 +217,47 @@ export function Canvas() {
   }, [screenToWorld, addStudioItem, addLogMessage, items])
 
   const renderItem = (item: StudioItem) => {
-    const x = item.position.x - item.dimensions.width / 2
-    const y = item.position.y - item.dimensions.height / 2
+    const x = -item.dimensions.width / 2
+    const y = -item.dimensions.height / 2
     
     return (
       <g key={item.id}>
-        <rect
-          x={x}
-          y={y}
-          width={item.dimensions.width}
-          height={item.dimensions.height}
-          fill={item.selected ? '#e3f2fd' : '#f5f5f5'}
-          stroke={item.selected ? '#2196f3' : '#666'}
-          strokeWidth={item.selected ? 0.02 : 0.01}
-          rx={0.05}
-        />
-        <text
-          x={item.position.x}
-          y={item.position.y}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize={0.1}
-          fill="#333"
-        >
-          {item.name}
-        </text>
+        {/* Item group with rotation transform */}
+        <g transform={`translate(${item.position.x}, ${item.position.y}) rotate(${item.rotation})`}>
+          <rect
+            x={x}
+            y={y}
+            width={item.dimensions.width}
+            height={item.dimensions.height}
+            fill={item.selected ? '#e3f2fd' : '#f5f5f5'}
+            stroke={item.selected ? '#2196f3' : '#666'}
+            strokeWidth={item.selected ? 0.02 : 0.01}
+            rx={0.05}
+          />
+          <text
+            x={0}
+            y={0}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize={0.1}
+            fill="#333"
+          >
+            {item.name}
+          </text>
+        </g>
+        
+        {/* Rotation handle - only show for selected items */}
+        {item.selected && (
+          <RotationHandle
+            itemId={item.id}
+            itemPosition={item.position}
+            itemDimensions={item.dimensions}
+            itemRotation={item.rotation}
+            onRotationStart={handleRotationStart}
+            onRotationUpdate={handleRotationUpdate}
+            onRotationEnd={handleRotationEnd}
+          />
+        )}
       </g>
     )
   }
