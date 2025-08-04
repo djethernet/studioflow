@@ -32,23 +32,37 @@ export function ConnectionsCanvas() {
     currentPos: { x: number, y: number }
   } | null>(null)
 
-  // Update container dimensions based on window size to avoid circular dependency
+  // Update container dimensions based on parent container size to avoid circular dependency
   useEffect(() => {
     const updateDimensions = () => {
-      // Use window dimensions and reserve space for UI elements
-      const availableWidth = window.innerWidth - 650 // Account for side panels
-      const availableHeight = window.innerHeight - 100 // Account for tab header and margins
-      setContainerDimensions({ 
-        width: Math.max(300, availableWidth), 
-        height: Math.max(200, availableHeight) 
-      })
+      if (containerRef.current?.parentElement) {
+        const parentRect = containerRef.current.parentElement.getBoundingClientRect()
+        if (parentRect.width > 0 && parentRect.height > 0) {
+          setContainerDimensions({ 
+            width: parentRect.width, 
+            height: parentRect.height 
+          })
+        }
+      }
     }
 
-    updateDimensions()
-    window.addEventListener('resize', updateDimensions)
+    // Initial update with small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateDimensions, 10)
+    
+    // Set up resize observer to watch parent changes
+    let resizeObserver: ResizeObserver | null = null
+    if (containerRef.current?.parentElement) {
+      resizeObserver = new ResizeObserver(() => {
+        updateDimensions()
+      })
+      resizeObserver.observe(containerRef.current.parentElement)
+    }
     
     return () => {
-      window.removeEventListener('resize', updateDimensions)
+      clearTimeout(timeoutId)
+      if (resizeObserver) {
+        resizeObserver.disconnect()
+      }
     }
   }, [])
 
@@ -502,8 +516,7 @@ export function ConnectionsCanvas() {
     <div 
       ref={containerRef}
       style={{ 
-        width: containerDimensions.width,
-        height: containerDimensions.height,
+        flex: 1,
         overflow: 'hidden', 
         cursor: isDragging.current ? 'grabbing' : 'grab',
         userSelect: 'none',
