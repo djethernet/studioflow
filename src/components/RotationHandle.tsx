@@ -55,9 +55,13 @@ export function RotationHandle({
       // Calculate angle from item center to mouse position
       const dx = normalizedX - itemPosition.x
       const dy = normalizedY - itemPosition.y
-      const angle = Math.atan2(dx, -dy) * 180 / Math.PI
+      const rawAngle = Math.atan2(dx, -dy) * 180 / Math.PI
       
-      onRotationUpdate(itemId, angle)
+      // Snap to 15-degree increments
+      const snapIncrement = 15
+      const snappedAngle = Math.round(rawAngle / snapIncrement) * snapIncrement
+      
+      onRotationUpdate(itemId, snappedAngle)
     }
 
     const handleGlobalMouseUp = () => {
