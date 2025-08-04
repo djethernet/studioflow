@@ -32,49 +32,31 @@ export function ConnectionsCanvas() {
     currentPos: { x: number, y: number }
   } | null>(null)
 
-  // Update container dimensions based on parent container size to avoid circular dependency
+  // Update container dimensions based on window size to avoid circular dependency
   useEffect(() => {
     const updateDimensions = () => {
-      if (containerRef.current?.parentElement) {
-        const parentRect = containerRef.current.parentElement.getBoundingClientRect()
-        if (parentRect.width > 0 && parentRect.height > 0) {
-          setContainerDimensions({ 
-            width: parentRect.width, 
-            height: parentRect.height 
-          })
-        }
-      }
+      // Use window dimensions and reserve space for UI elements
+      // ConnectionsCanvas only has the right panel (no left panel like Canvas)
+      const availableWidth = window.innerWidth - 300 // Account for right equipment panel
+      const availableHeight = window.innerHeight - 100 // Account for tab header and margins
+      setContainerDimensions({ 
+        width: Math.max(300, availableWidth), 
+        height: Math.max(200, availableHeight) 
+      })
     }
 
-    // Initial update with small delay to ensure DOM is ready
-    const timeoutId = setTimeout(updateDimensions, 10)
-    
-    // Set up resize observer to watch parent changes
-    let resizeObserver: ResizeObserver | null = null
-    if (containerRef.current?.parentElement) {
-      resizeObserver = new ResizeObserver(() => {
-        updateDimensions()
-      })
-      resizeObserver.observe(containerRef.current.parentElement)
-    }
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
     
     return () => {
-      clearTimeout(timeoutId)
-      if (resizeObserver) {
-        resizeObserver.disconnect()
-      }
+      window.removeEventListener('resize', updateDimensions)
     }
   }, [])
 
   // Coordinate transformation utilities
   const getViewBox = useCallback(() => {
-    // Use actual SVG dimensions if available, fallback to container dimensions
-    const rect = svgRef.current?.getBoundingClientRect()
-    const width = rect?.width || containerDimensions.width
-    const height = rect?.height || containerDimensions.height
-    
-    const viewBoxWidth = width / connectionsViewport.zoom
-    const viewBoxHeight = height / connectionsViewport.zoom
+    const viewBoxWidth = containerDimensions.width / connectionsViewport.zoom
+    const viewBoxHeight = containerDimensions.height / connectionsViewport.zoom
     const viewBoxX = -connectionsViewport.offsetX / connectionsViewport.zoom
     const viewBoxY = -connectionsViewport.offsetY / connectionsViewport.zoom
     return { x: viewBoxX, y: viewBoxY, width: viewBoxWidth, height: viewBoxHeight }
@@ -521,7 +503,8 @@ export function ConnectionsCanvas() {
     <div 
       ref={containerRef}
       style={{ 
-        flex: 1,
+        width: containerDimensions.width,
+        height: containerDimensions.height,
         overflow: 'hidden', 
         cursor: isDragging.current ? 'grabbing' : 'grab',
         userSelect: 'none',
@@ -532,8 +515,8 @@ export function ConnectionsCanvas() {
     >
       <svg
         ref={svgRef}
-        width="100%"
-        height="100%"
+        width={containerDimensions.width}
+        height={containerDimensions.height}
         viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
         preserveAspectRatio="xMidYMid meet"
         onMouseDown={handleMouseDown}
