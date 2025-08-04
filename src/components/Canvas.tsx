@@ -17,15 +17,19 @@ export function Canvas() {
   const isDragging = useRef(false)
   const dragStart = useRef({ x: 0, y: 0 })
   const draggedItem = useRef<string | null>(null)
-  const [svgDimensions, setSvgDimensions] = useState({ width: 800, height: 600 })
+  const [containerDimensions, setContainerDimensions] = useState({ width: 800, height: 600 })
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // Update SVG dimensions when ref becomes available or window resizes
+  // Update container dimensions based on window size to avoid circular dependency
   useEffect(() => {
     const updateDimensions = () => {
-      const rect = svgRef.current?.getBoundingClientRect()
-      if (rect) {
-        setSvgDimensions({ width: rect.width, height: rect.height })
-      }
+      // Use window dimensions and reserve space for UI elements
+      const availableWidth = window.innerWidth - 650 // Account for side panels
+      const availableHeight = window.innerHeight - 100 // Account for tab header and margins
+      setContainerDimensions({ 
+        width: Math.max(300, availableWidth), 
+        height: Math.max(200, availableHeight) 
+      })
     }
 
     updateDimensions()
@@ -36,26 +40,34 @@ export function Canvas() {
     }
   }, [])
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect) return
-
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    
-    // Convert to normalized coordinates (0-1)
-    const normalizedX = mouseX / rect.width
-    const normalizedY = mouseY / rect.height
-    
-    // Convert to world coordinates using viewBox
-    const viewBoxWidth = rect.width / viewport.zoom
-    const viewBoxHeight = rect.height / viewport.zoom
+  // Coordinate transformation utilities
+  const getViewBox = useCallback(() => {
+    const viewBoxWidth = containerDimensions.width / viewport.zoom
+    const viewBoxHeight = containerDimensions.height / viewport.zoom
     const viewBoxX = -viewport.offsetX / viewport.zoom
     const viewBoxY = -viewport.offsetY / viewport.zoom
+    return { x: viewBoxX, y: viewBoxY, width: viewBoxWidth, height: viewBoxHeight }
+  }, [containerDimensions, viewport])
+
+  const screenToWorld = useCallback((screenX: number, screenY: number) => {
+    const rect = svgRef.current?.getBoundingClientRect()
+    if (!rect) return { x: 0, y: 0 }
     
-    const x = viewBoxX + (normalizedX * viewBoxWidth)
-    const y = viewBoxY + (normalizedY * viewBoxHeight)
+    const normalizedX = (screenX - rect.left) / rect.width
+    const normalizedY = (screenY - rect.top) / rect.height
+    
+    const viewBox = getViewBox()
+    const worldX = viewBox.x + (normalizedX * viewBox.width)
+    const worldY = viewBox.y + (normalizedY * viewBox.height)
+    
+    return { x: worldX, y: worldY }
+  }, [getViewBox])
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    
+    const worldPos = screenToWorld(e.clientX, e.clientY)
+    const { x, y } = worldPos
 
     // Check if clicking on an item
     const clickedItem = items.find(item => {
@@ -76,7 +88,7 @@ export function Canvas() {
 
     isDragging.current = true
     dragStart.current = { x: e.clientX, y: e.clientY }
-  }, [items, viewport, selectStudioItem])
+  }, [items, screenToWorld, selectStudioItem])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -152,29 +164,11 @@ export function Canvas() {
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
-    
-    const rect = svgRef.current?.getBoundingClientRect()
-    if (!rect) return
 
     try {
       const gearItem = JSON.parse(e.dataTransfer.getData('application/json'))
-      
-      // Get mouse position relative to SVG
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-      
-      // Convert to normalized coordinates (0-1)
-      const normalizedX = mouseX / rect.width
-      const normalizedY = mouseY / rect.height
-      
-      // Convert to world coordinates using viewBox
-      const viewBoxWidth = rect.width / viewport.zoom
-      const viewBoxHeight = rect.height / viewport.zoom
-      const viewBoxX = -viewport.offsetX / viewport.zoom
-      const viewBoxY = -viewport.offsetY / viewport.zoom
-      
-      const worldX = viewBoxX + (normalizedX * viewBoxWidth)
-      const worldY = viewBoxY + (normalizedY * viewBoxHeight)
+      const worldPos = screenToWorld(e.clientX, e.clientY)
+      const { x: worldX, y: worldY } = worldPos
       
       // Check for overlapping items
       const hasOverlap = items.some(item => {
@@ -196,7 +190,7 @@ export function Canvas() {
       console.error('Failed to parse dropped item:', error)
       addLogMessage('warning', 'Failed to add item to canvas - invalid data')
     }
-  }, [viewport, addStudioItem, addLogMessage, items])
+  }, [screenToWorld, addStudioItem, addLogMessage, items])
 
   const renderItem = (item: StudioItem) => {
     const x = item.position.x - item.dimensions.width / 2
@@ -230,17 +224,12 @@ export function Canvas() {
 
   const renderGrid = () => {
     const gridSize = 0.5 // 0.5m grid
-    const viewBox = {
-      left: -viewport.offsetX / viewport.zoom,
-      top: -viewport.offsetY / viewport.zoom,
-      width: svgDimensions.width / viewport.zoom,
-      height: svgDimensions.height / viewport.zoom
-    }
+    const viewBox = getViewBox()
 
-    const startX = Math.floor(viewBox.left / gridSize) * gridSize
-    const endX = Math.ceil((viewBox.left + viewBox.width) / gridSize) * gridSize
-    const startY = Math.floor(viewBox.top / gridSize) * gridSize
-    const endY = Math.ceil((viewBox.top + viewBox.height) / gridSize) * gridSize
+    const startX = Math.floor(viewBox.x / gridSize) * gridSize
+    const endX = Math.ceil((viewBox.x + viewBox.width) / gridSize) * gridSize
+    const startY = Math.floor(viewBox.y / gridSize) * gridSize
+    const endY = Math.ceil((viewBox.y + viewBox.height) / gridSize) * gridSize
 
     const lines = []
     
@@ -249,9 +238,9 @@ export function Canvas() {
         <line
           key={`v${x}`}
           x1={x}
-          y1={viewBox.top}
+          y1={viewBox.y}
           x2={x}
-          y2={viewBox.top + viewBox.height}
+          y2={viewBox.y + viewBox.height}
           stroke="#e0e0e0"
           strokeWidth={0.005}
         />
@@ -262,9 +251,9 @@ export function Canvas() {
       lines.push(
         <line
           key={`h${y}`}
-          x1={viewBox.left}
+          x1={viewBox.x}
           y1={y}
-          x2={viewBox.left + viewBox.width}
+          x2={viewBox.x + viewBox.width}
           y2={y}
           stroke="#e0e0e0"
           strokeWidth={0.005}
@@ -275,24 +264,28 @@ export function Canvas() {
     return <g>{lines}</g>
   }
 
-  const viewBoxWidth = svgDimensions.width / viewport.zoom
-  const viewBoxHeight = svgDimensions.height / viewport.zoom
+  const viewBox = getViewBox()
 
   return (
-    <div style={{ 
-      flex: 1, 
-      overflow: 'hidden', 
-      cursor: isDragging.current ? 'grabbing' : 'grab',
-      userSelect: 'none',
-      WebkitUserSelect: 'none',
-      MozUserSelect: 'none',
-      msUserSelect: 'none'
-    }}>
+    <div 
+      ref={containerRef}
+      style={{ 
+        width: containerDimensions.width,
+        height: containerDimensions.height,
+        overflow: 'hidden', 
+        cursor: isDragging.current ? 'grabbing' : 'grab',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none'
+      }}
+    >
       <svg
         ref={svgRef}
-        width="100%"
-        height="100%"
-        viewBox={`${-viewport.offsetX / viewport.zoom} ${-viewport.offsetY / viewport.zoom} ${viewBoxWidth} ${viewBoxHeight}`}
+        width={containerDimensions.width}
+        height={containerDimensions.height}
+        viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
+        preserveAspectRatio="xMidYMid meet"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
