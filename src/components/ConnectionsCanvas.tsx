@@ -68,8 +68,13 @@ export function ConnectionsCanvas() {
 
   // Coordinate transformation utilities
   const getViewBox = useCallback(() => {
-    const viewBoxWidth = containerDimensions.width / connectionsViewport.zoom
-    const viewBoxHeight = containerDimensions.height / connectionsViewport.zoom
+    // Use actual SVG dimensions if available, fallback to container dimensions
+    const rect = svgRef.current?.getBoundingClientRect()
+    const width = rect?.width || containerDimensions.width
+    const height = rect?.height || containerDimensions.height
+    
+    const viewBoxWidth = width / connectionsViewport.zoom
+    const viewBoxHeight = height / connectionsViewport.zoom
     const viewBoxX = -connectionsViewport.offsetX / connectionsViewport.zoom
     const viewBoxY = -connectionsViewport.offsetY / connectionsViewport.zoom
     return { x: viewBoxX, y: viewBoxY, width: viewBoxWidth, height: viewBoxHeight }
@@ -527,8 +532,8 @@ export function ConnectionsCanvas() {
     >
       <svg
         ref={svgRef}
-        width={containerDimensions.width}
-        height={containerDimensions.height}
+        width="100%"
+        height="100%"
         viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
         preserveAspectRatio="xMidYMid meet"
         onMouseDown={handleMouseDown}
