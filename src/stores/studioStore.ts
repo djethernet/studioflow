@@ -90,13 +90,58 @@ const sampleLibraryItems: LibraryItem[] = [
     productModel: 'MOTU 828',
     dimensions: { width: 0.48, height: 0.22 },
     connections: [
-      { id: 'motu-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'motu-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'motu-out-l', name: 'Line Out L', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out-r', name: 'Line Out R', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-hp', name: 'Headphone Out', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
-      { id: 'motu-midi-in-a', name: 'MIDI A In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
-      { id: 'motu-midi-in-b', name: 'MIDI B In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
+      // Front panel mic/line/hi-Z inputs (2x XLR/TRS combo)
+      { id: 'motu-mic1', name: 'Mic/Line/Hi-Z Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'motu-mic2', name: 'Mic/Line/Hi-Z Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      // Rear panel line inputs (8x TRS)
+      { id: 'motu-line3', name: 'Line Input 3', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line4', name: 'Line Input 4', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line5', name: 'Line Input 5', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line6', name: 'Line Input 6', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line7', name: 'Line Input 7', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line8', name: 'Line Input 8', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line9', name: 'Line Input 9', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      { id: 'motu-line10', name: 'Line Input 10', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
+      
+      // Main analog outputs (2x XLR)
+      { id: 'motu-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
+      { id: 'motu-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
+      // Line outputs (8x TRS)
+      { id: 'motu-out3', name: 'Line Out 3', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out4', name: 'Line Out 4', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out5', name: 'Line Out 5', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out6', name: 'Line Out 6', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out7', name: 'Line Out 7', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out8', name: 'Line Out 8', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out9', name: 'Line Out 9', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out10', name: 'Line Out 10', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      
+      // Headphone outputs (2x front panel)
+      { id: 'motu-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
+      { id: 'motu-hp2', name: 'Headphone Out 2', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
+      
+      // Digital I/O - ADAT (16 channels total via 2 optical banks)
+      { id: 'motu-adat-in-a', name: 'ADAT Bank A In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
+      { id: 'motu-adat-in-b', name: 'ADAT Bank B In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
+      { id: 'motu-adat-out-a', name: 'ADAT Bank A Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'port' },
+      { id: 'motu-adat-out-b', name: 'ADAT Bank B Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'port' },
+      
+      // S/PDIF digital (RCA)
+      { id: 'motu-spdif-in', name: 'S/PDIF In', direction: 'input', physical: 'RCA', category: 'digital', way: 'socket' },
+      { id: 'motu-spdif-out', name: 'S/PDIF Out', direction: 'output', physical: 'RCA', category: 'digital', way: 'port' },
+      
+      // MIDI I/O
+      { id: 'motu-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
+      { id: 'motu-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' },
+      { id: 'motu-midi-thru', name: 'MIDI Thru', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' },
+      
+      // Word Clock I/O (BNC)
+      { id: 'motu-wc-in', name: 'Word Clock In', direction: 'input', physical: 'BNC', category: 'digital', way: 'socket' },
+      { id: 'motu-wc-out', name: 'Word Clock Out', direction: 'output', physical: 'BNC', category: 'digital', way: 'port' },
+      { id: 'motu-wc-thru', name: 'Word Clock Thru', direction: 'output', physical: 'BNC', category: 'digital', way: 'port' },
+      
+      // Footswitch input
+      { id: 'motu-footswitch', name: 'Footswitch In', direction: 'input', physical: '1/4', category: 'control', way: 'socket' }
     ],
     category: 'Interface',
     icon: '/src/assets/library_images/motu_828.jpg',
