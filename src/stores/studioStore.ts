@@ -61,6 +61,12 @@ type StudioState = {
   addLogMessage: (level: LogLevel, message: string) => void
   clearLogMessage: (id: string) => void
   clearAllLogs: () => void
+  
+  // Rack mounting actions
+  mountItemInRack: (itemId: string, rackId: string, rackPosition: number) => boolean
+  unmountItemFromRack: (itemId: string) => void
+  getRackMountedItems: (rackId: string) => StudioItem[]
+  getAvailableRackPositions: (rackId: string, itemRackUnits: number) => number[]
 }
 
 // Sample library data (templates)
@@ -76,6 +82,7 @@ const sampleLibraryItems: LibraryItem[] = [
     ],
     category: 'Speakers',
     icon: '/src/assets/library_images/genelec_1031a.jpg'
+    // No rackUnits - this is not rack-mountable
   },
   {
     id: 2,
@@ -92,7 +99,8 @@ const sampleLibraryItems: LibraryItem[] = [
       { id: 'motu-midi-in-b', name: 'MIDI B In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
     ],
     category: 'Interface',
-    icon: '/src/assets/library_images/motu_828.jpg'
+    icon: '/src/assets/library_images/motu_828.jpg',
+    rackUnits: 1  // 1U rack-mountable audio interface
   },
   {
     id: 3,
@@ -107,6 +115,7 @@ const sampleLibraryItems: LibraryItem[] = [
     ],
     category: 'Synth',
     icon: '/src/assets/library_images/roland_jp8000.jpg'
+    // No rackUnits - desktop synthesizer
   },
   {
     id: 4,
@@ -123,6 +132,52 @@ const sampleLibraryItems: LibraryItem[] = [
     ],
     category: 'Mixer',
     icon: '/src/assets/library_images/yamaha_o2r.jpg'
+    // No rackUnits - large format desk mixer
+  },
+  {
+    id: 5,
+    name: '19" Equipment Rack',
+    productModel: 'Standard 19" Rack 12U',
+    dimensions: { width: 0.6, height: 0.7 }, // Standard 19" rack dimensions in overhead view
+    connections: [
+      { id: 'rack-power-in', name: 'Power Input', direction: 'input', physical: 'XLR', category: 'digital', way: 'socket' }
+    ],
+    category: 'Rack',
+    icon: '/src/assets/library_images/rack_12u.jpg',
+    isRack: true,
+    rackCapacity: 12  // 12U rack
+  },
+  {
+    id: 6,
+    name: 'Focusrite Scarlett 18i20',
+    productModel: 'Focusrite Scarlett 18i20',
+    dimensions: { width: 0.48, height: 0.044 }, // 1U rack dimensions
+    connections: [
+      { id: 'scarlett-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'scarlett-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'scarlett-out1', name: 'Line Out 1', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'scarlett-out2', name: 'Line Out 2', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'scarlett-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
+      { id: 'scarlett-hp2', name: 'Headphone Out 2', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' }
+    ],
+    category: 'Interface',
+    icon: '/src/assets/library_images/focusrite_scarlett.jpg',
+    rackUnits: 1
+  },
+  {
+    id: 7,
+    name: 'DBX 266xs Compressor',
+    productModel: 'DBX 266xs',
+    dimensions: { width: 0.48, height: 0.044 }, // 1U rack dimensions  
+    connections: [
+      { id: 'dbx-in1', name: 'Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'dbx-in2', name: 'Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
+      { id: 'dbx-out1', name: 'Output 1', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
+      { id: 'dbx-out2', name: 'Output 2', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' }
+    ],
+    category: 'Processor',
+    icon: '/src/assets/library_images/dbx_266xs.jpg',
+    rackUnits: 1
   }
 ]
 
@@ -175,11 +230,16 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       connections: libraryItem.connections,
       category: libraryItem.category,
       icon: libraryItem.icon,
+      rackUnits: libraryItem.rackUnits,
+      isRack: libraryItem.isRack,
+      rackCapacity: libraryItem.rackCapacity,
       // Instance properties
       position: { x, y },
       rotation: 0,
       isOnCanvas: onCanvas,
-      selected: false
+      selected: false,
+      // Initialize rack properties
+      mountedItems: libraryItem.isRack ? [] : undefined
     }
     
     set((state) => ({
@@ -419,5 +479,125 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   getNodeConnections: () => {
     const { nodeConnections } = get()
     return nodeConnections
+  },
+  
+  // Rack mounting actions
+  mountItemInRack: (itemId, rackId, rackPosition) => {
+    const { studioItems } = get()
+    
+    const item = studioItems.find(i => i.id === itemId)
+    const rack = studioItems.find(i => i.id === rackId)
+    
+    if (!item || !rack || !rack.isRack || !item.rackUnits) {
+      get().addLogMessage('error', 'Cannot mount: invalid item or rack')
+      return false
+    }
+    
+    // Check if position is available
+    const availablePositions = get().getAvailableRackPositions(rackId, item.rackUnits)
+    if (!availablePositions.includes(rackPosition)) {
+      get().addLogMessage('error', `Rack position ${rackPosition} not available`)
+      return false
+    }
+    
+    // Remove item from canvas and mount in rack
+    set((state) => ({
+      studioItems: state.studioItems.map((studioItem) => {
+        if (studioItem.id === itemId) {
+          return {
+            ...studioItem,
+            mountedInRack: rackId,
+            rackPosition: rackPosition,
+            isOnCanvas: false
+          }
+        }
+        if (studioItem.id === rackId) {
+          return {
+            ...studioItem,
+            mountedItems: [...(studioItem.mountedItems || []), itemId]
+          }
+        }
+        return studioItem
+      })
+    }))
+    
+    get().addLogMessage('success', `${item.name} mounted in rack at ${rackPosition}U`)
+    return true
+  },
+  
+  unmountItemFromRack: (itemId) => {
+    const { studioItems } = get()
+    const item = studioItems.find(i => i.id === itemId)
+    
+    if (!item || !item.mountedInRack) {
+      return
+    }
+    
+    const rackId = item.mountedInRack
+    
+    set((state) => ({
+      studioItems: state.studioItems.map((studioItem) => {
+        if (studioItem.id === itemId) {
+          return {
+            ...studioItem,
+            mountedInRack: undefined,
+            rackPosition: undefined,
+            isOnCanvas: true // Put back on canvas
+          }
+        }
+        if (studioItem.id === rackId) {
+          return {
+            ...studioItem,
+            mountedItems: (studioItem.mountedItems || []).filter(id => id !== itemId)
+          }
+        }
+        return studioItem
+      })
+    }))
+    
+    get().addLogMessage('info', `${item.name} unmounted from rack`)
+  },
+  
+  getRackMountedItems: (rackId) => {
+    const { studioItems } = get()
+    return studioItems.filter(item => item.mountedInRack === rackId)
+  },
+  
+  getAvailableRackPositions: (rackId, itemRackUnits) => {
+    const { studioItems } = get()
+    
+    const rack = studioItems.find(item => item.id === rackId)
+    if (!rack || !rack.isRack || !rack.rackCapacity) {
+      return []
+    }
+    
+    const mountedItems = get().getRackMountedItems(rackId)
+    const occupiedPositions = new Set<number>()
+    
+    // Mark all occupied positions
+    mountedItems.forEach(item => {
+      if (item.rackPosition && item.rackUnits) {
+        for (let i = 0; i < item.rackUnits; i++) {
+          occupiedPositions.add(item.rackPosition + i)
+        }
+      }
+    })
+    
+    // Find available positions that can fit the item
+    const availablePositions: number[] = []
+    for (let pos = 1; pos <= rack.rackCapacity - itemRackUnits + 1; pos++) {
+      let canFit = true
+      for (let i = 0; i < itemRackUnits; i++) {
+        if (occupiedPositions.has(pos + i)) {
+          canFit = false
+          break
+        }
+      }
+      if (canFit) {
+        availablePositions.push(pos)
+      }
+    }
+    
+    return availablePositions
   }
 }))

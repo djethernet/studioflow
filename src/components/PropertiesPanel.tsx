@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Text, Group, Stack, Image, Badge, ScrollArea, TextInput, ActionIcon } from '@mantine/core'
+import { Text, Group, Stack, Image, Badge, ScrollArea, TextInput, ActionIcon, Divider } from '@mantine/core'
 import { IconEdit, IconCheck, IconX } from '@tabler/icons-react'
 import type { StudioItem, LibraryItem, NodeConnection } from '../types/StudioItem'
+import { RackSpaceComponent } from './RackSpaceComponent'
 
 interface PropertiesPanelProps {
   // Item data
@@ -118,7 +119,28 @@ export function PropertiesPanel({
               <Text size="sm">
                 X: {selectedItem.position.x.toFixed(2)}m, Y: {selectedItem.position.y.toFixed(2)}m
               </Text>
+              {selectedItem.mountedInRack && (
+                <Text size="sm" c="blue">
+                  Mounted in rack at position {selectedItem.rackPosition}U
+                </Text>
+              )}
             </div>
+          )}
+
+          {/* Rack Units (for rack-mountable items) */}
+          {displayItem.rackUnits && displayItem.rackUnits > 0 && (
+            <div>
+              <Text fw={500} size="sm" mb="xs">Rack Size</Text>
+              <Text size="sm">{displayItem.rackUnits}U</Text>
+            </div>
+          )}
+
+          {/* Rack Space Component (for racks) */}
+          {isStudioItem && selectedItem && selectedItem.isRack && (
+            <>
+              <Divider />
+              <RackSpaceComponent rack={selectedItem} />
+            </>
           )}
 
           {/* Connections */}

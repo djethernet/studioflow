@@ -94,9 +94,17 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
                   <Text size="sm" fw={500} style={{ flex: 1 }}>
                     {item.name}
                   </Text>
-                  {item.isOnCanvas && (
+                  {item.mountedInRack ? (
+                    <Badge variant="filled" color="purple" size="xs">
+                      In Rack
+                    </Badge>
+                  ) : item.isOnCanvas ? (
                     <Badge variant="filled" color="green" size="xs">
                       In Studio
+                    </Badge>
+                  ) : (
+                    <Badge variant="light" color="gray" size="xs">
+                      Not Placed
                     </Badge>
                   )}
                 </Group>

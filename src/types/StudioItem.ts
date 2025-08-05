@@ -27,6 +27,9 @@ export interface LibraryItem {
   connections: Connection[]
   category?: string
   icon?: string
+  rackUnits?: number          // Height in rack units (1U = 1.75"). 0 or undefined = not rack-mountable
+  isRack?: boolean            // True if this item IS a rack that can hold other equipment
+  rackCapacity?: number       // Number of rack units this rack can hold (only for isRack: true)
 }
 
 // Studio item - an instance of gear in the studio project
@@ -42,12 +45,20 @@ export interface StudioItem {
   connections: Connection[]
   category?: string
   icon?: string
+  rackUnits?: number          // Height in rack units (copied from library)
+  isRack?: boolean            // True if this item IS a rack (copied from library)
+  rackCapacity?: number       // Number of rack units this rack can hold (copied from library)
   
   // Instance-specific properties
   position: Position           // World coordinates on canvas
   rotation: number            // Rotation in degrees
   isOnCanvas: boolean         // Whether placed on canvas or just in project
   selected: boolean           // UI selection state
+  
+  // Rack mounting properties
+  mountedInRack?: string      // ID of the rack this item is mounted in
+  rackPosition?: number       // Starting rack unit position (1-based, from bottom)
+  mountedItems?: string[]     // IDs of items mounted in this rack (only for isRack: true)
   
   // Future extensibility
   // tags?: string[]          // User-defined tags
