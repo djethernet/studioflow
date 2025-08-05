@@ -75,7 +75,7 @@ const sampleLibraryItems: LibraryItem[] = [
     id: 1,
     name: 'Genelec 1031A',
     productModel: 'Genelec 1031A',
-    dimensions: { width: 0.3, height: 0.5 },
+    dimensions: { width: 0.19, height: 0.28 },
     connections: [
       { id: 'genelec-xlr-in', name: 'XLR Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'genelec-trs-in', name: 'TRS Input', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' }
@@ -88,7 +88,7 @@ const sampleLibraryItems: LibraryItem[] = [
     id: 2,
     name: 'MOTU 828',
     productModel: 'MOTU 828',
-    dimensions: { width: 0.4, height: 0.2 },
+    dimensions: { width: 0.48, height: 0.22 },
     connections: [
       { id: 'motu-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'motu-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
@@ -151,7 +151,7 @@ const sampleLibraryItems: LibraryItem[] = [
     id: 6,
     name: 'Focusrite Scarlett 18i20',
     productModel: 'Focusrite Scarlett 18i20',
-    dimensions: { width: 0.48, height: 0.044 }, // 1U rack dimensions
+    dimensions: { width: 0.48, height: 0.25 }, // Overhead view dimensions
     connections: [
       { id: 'scarlett-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'scarlett-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
@@ -168,7 +168,7 @@ const sampleLibraryItems: LibraryItem[] = [
     id: 7,
     name: 'DBX 266xs Compressor',
     productModel: 'DBX 266xs',
-    dimensions: { width: 0.48, height: 0.044 }, // 1U rack dimensions  
+    dimensions: { width: 0.48, height: 0.25 }, // Overhead view dimensions  
     connections: [
       { id: 'dbx-in1', name: 'Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'dbx-in2', name: 'Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
