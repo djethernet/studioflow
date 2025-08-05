@@ -54,14 +54,11 @@ function RackSlot({ position, isEmpty, item, onDrop, onDoubleClick }: RackSlotPr
           style={{ width: '100%', paddingLeft: '24px' }}
           onDoubleClick={() => item && onDoubleClick && onDoubleClick(item)}
         >
-          <img 
-            src={item.icon} 
-            alt={item.name}
-            style={{ width: '24px', height: '24px', objectFit: 'contain' }}
-          />
-          <Text size="sm" truncate style={{ flex: 1 }}>
-            {item.name}
+          
+          <Text size="sm" fw={500} style={{ flex: 1 }}>
+             {item.name}
           </Text>
+
           <Text size="xs" c="dimmed">
             {item.rackUnits}U
           </Text>
