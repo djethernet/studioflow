@@ -84,10 +84,29 @@ export function ConnectionsCanvas() {
     return { x: worldX, y: worldY }
   }, [getViewBox])
 
+  // Helper function to truncate text if longer than specified characters
+  const truncateText = (text: string, maxLength: number = 20): string => {
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + '...'
+  }
+
+  // Helper function to calculate dynamic node width based on longest connection name
+  const calculateNodeWidth = (item: StudioItem): number => {
+    const minWidth = 3
+    const maxNameLength = Math.max(
+      ...item.connections.map(conn => conn.name.length),
+      item.name.length
+    )
+    
+    // Roughly 0.15 units per character, with some padding
+    const calculatedWidth = Math.max(minWidth, (maxNameLength * 0.15) + 1.2)
+    return Math.min(calculatedWidth, 6) // Cap at 6 units maximum width
+  }
+
   // Helper to get connection circle position
   const getConnectionPosition = useCallback((item: StudioItem, connectionId: string) => {
     const nodePos = getNodePosition(item.id)
-    const nodeWidth = 3
+    const nodeWidth = calculateNodeWidth(item)
     const connection = item.connections.find(conn => conn.id === connectionId)
     if (!connection) return { x: 0, y: 0 }
     
@@ -156,7 +175,7 @@ export function ConnectionsCanvas() {
     // Check if clicking on a node (using node dimensions for hit detection)
     const clickedNode = items.find(item => {
       const nodePos = getNodePosition(item.id)
-      const nodeWidth = 3 // Node width in world units
+      const nodeWidth = calculateNodeWidth(item)
       const inputCount = item.connections.filter(conn => conn.direction === 'input').length
       const outputCount = item.connections.filter(conn => conn.direction === 'output').length
       const maxConnections = Math.max(inputCount, outputCount, 1)
@@ -351,7 +370,7 @@ export function ConnectionsCanvas() {
 
   const renderNode = (item: StudioItem) => {
     const nodePos = getNodePosition(item.id)
-    const nodeWidth = 3
+    const nodeWidth = calculateNodeWidth(item)
     const inputCount = item.connections.filter(conn => conn.direction === 'input').length
     const outputCount = item.connections.filter(conn => conn.direction === 'output').length
     const maxConnections = Math.max(inputCount, outputCount, 1)
@@ -424,7 +443,7 @@ export function ConnectionsCanvas() {
                 fill="#495057"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
-                {connection.name}
+                {truncateText(connection.name)}
               </text>
             </g>
           )
@@ -454,7 +473,7 @@ export function ConnectionsCanvas() {
                 fill="#495057"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
-                {connection.name}
+                {truncateText(connection.name)}
               </text>
             </g>
           )
