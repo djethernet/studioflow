@@ -5,6 +5,7 @@ interface RotationHandleProps {
   itemPosition: { x: number; y: number }
   itemDimensions: { width: number; height: number }
   itemRotation: number
+  screenToWorld: (screenX: number, screenY: number) => { x: number; y: number }
   onRotationStart: (itemId: string) => void
   onRotationUpdate: (itemId: string, angle: number) => void
   onRotationEnd: () => void
@@ -15,6 +16,7 @@ export function RotationHandle({
   itemPosition,
   itemDimensions,
   itemRotation,
+  screenToWorld,
   onRotationStart,
   onRotationUpdate,
   onRotationEnd
@@ -40,21 +42,12 @@ export function RotationHandle({
     const handleGlobalMouseMove = (e: MouseEvent) => {
       if (!isRotating.current) return
       
-      const svgElement = document.querySelector('svg')
-      if (!svgElement) return
-      
-      const rect = svgElement.getBoundingClientRect()
-      const mouseX = e.clientX - rect.left
-      const mouseY = e.clientY - rect.top
-      
-      // Convert screen coordinates to SVG world coordinates
-      const viewBox = svgElement.viewBox.baseVal
-      const normalizedX = (mouseX / rect.width) * viewBox.width + viewBox.x
-      const normalizedY = (mouseY / rect.height) * viewBox.height + viewBox.y
+      // Use the same coordinate transformation as Canvas component
+      const worldPos = screenToWorld(e.clientX, e.clientY)
       
       // Calculate angle from item center to mouse position
-      const dx = normalizedX - itemPosition.x
-      const dy = normalizedY - itemPosition.y
+      const dx = worldPos.x - itemPosition.x
+      const dy = worldPos.y - itemPosition.y
       const rawAngle = Math.atan2(dx, -dy) * 180 / Math.PI
       
       // Snap to 15-degree increments
@@ -79,7 +72,7 @@ export function RotationHandle({
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
     }
-  }, [itemId, itemPosition, onRotationUpdate, onRotationEnd])
+  }, [itemId, itemPosition, onRotationUpdate, onRotationEnd, screenToWorld])
 
   return (
     <g transform={`translate(${handleX}, ${handleY})`}>

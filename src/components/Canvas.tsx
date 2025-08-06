@@ -254,6 +254,7 @@ export function Canvas() {
             itemPosition={item.position}
             itemDimensions={item.dimensions}
             itemRotation={item.rotation}
+            screenToWorld={screenToWorld}
             onRotationStart={handleRotationStart}
             onRotationUpdate={handleRotationUpdate}
             onRotationEnd={handleRotationEnd}
