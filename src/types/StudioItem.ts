@@ -7,8 +7,8 @@ export interface Connection {
   id: string                           // Unique identifier for this connection
   name: string
   direction: 'input' | 'output'
-  physical: 'XLR' | '1/4' | '1/8' | 'MIDI' | 'USB' | 'TRS' | 'RCA'  // Physical connector type
-  category: 'unbalanced' | 'balanced' | 'digital' | 'midi'           // Signal category
+  physical: 'XLR' | '1/4' | '1/8' | 'MIDI' | 'USB' | 'TRS' | 'RCA' | 'Optical' | 'BNC'  // Physical connector type
+  category: 'unbalanced' | 'balanced' | 'digital' | 'midi' | 'control'           // Signal category
   way: 'port' | 'socket'               // Port (male) or socket (female)
   group?: string
 }
