@@ -177,7 +177,7 @@ export function PropertiesPanel({
 
           {/* Connection Details */}
           <div>
-            <Group p="md" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+            
               <Stack gap="sm" style={{ flex: 1 }}>
                 {/* Cable and Conversion Badges */}
 
@@ -201,9 +201,9 @@ export function PropertiesPanel({
                               {isConversion ? " Conversion" : ""} Cable
                             </Text>
                           </Group>
-
-                          <Text>{fromNode?.name} {fromConnection?.name}</Text>
-                          <Text component="span" fw={500}>→ </Text>
+                          <Text size="sm" c="dimmed">From</Text>
+                          <Text> {fromNode?.name} {fromConnection?.name}</Text>
+                          <Text size="sm" c="dimmed">To</Text>
                           <Text> {toNode?.name} {toConnection?.name}</Text>
                         </div>
                       )
@@ -212,7 +212,6 @@ export function PropertiesPanel({
                   </Text>
                 </Stack>
               </Stack>
-            </Group>
           </div>
         </Stack>
       )}

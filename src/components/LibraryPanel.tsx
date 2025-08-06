@@ -60,7 +60,7 @@ export function LibraryPanel() {
         }}
       >
         <Box mb="sm">
-          <Text size="lg" fw={600} mb="sm">Gear Library</Text>
+           <Text fw={700} size="lg" mb="sm">Catalog</Text>
           <TextInput
             placeholder="Search gear..."
             value={searchQuery}

@@ -71,7 +71,7 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
           borderBottom: '1px solid #e0e0e0'
         }}
       >
-        <Text fw={600} mb="sm">Equipment List</Text>
+        <Text fw={700} size="lg" mb="sm">My Equipment</Text>
         <ScrollArea style={{ flex: 1 }}>
           <Stack gap="xs">
             {/* Studio Items */}
