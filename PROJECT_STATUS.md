@@ -184,7 +184,15 @@ All items display actual product photos in the properties panel for professional
 
 ## Recent Development Progress
 
-### Equipment Panel System Complete ✅ (Latest)
+### Cable Length Calculation System Complete ✅ (Latest)
+- **Automatic Length Calculation**: Real-time cable length approximation based on physical item positions
+- **Practical Routing Factor**: 20% extra length + 1m minimum to account for realistic cable routing (not straight-line)
+- **Dynamic Updates**: Cable lengths automatically recalculate when equipment is moved on canvas
+- **Professional Display**: Cable length shown with blue badge in PropertiesPanel with consistent styling
+- **Enhanced Properties View**: Improved cable connection display with bordered cards and Input/Output badges
+- **Type System Extension**: Added `length` field to NodeConnection type with full TypeScript support
+
+### Equipment Panel System Complete ✅ (Previous)
 - **Professional Equipment Management**: Comprehensive equipment panel with resizable vertical splitter
 - **Cable Naming System**: Auto-generated cable names with format "Device A → Device B (Connector Type)"
 - **Dual-Mode Operation**: Layout mode (equipment only) vs Connections mode (equipment + cables)
@@ -222,13 +230,14 @@ All items display actual product photos in the properties panel for professional
 - ✅ **Equipment Management Panel**: Comprehensive equipment overview with cable naming and properties display
 - ✅ **Dual-View Architecture**: Seamless switching between Layout and Connections views with unified equipment panel
 - ✅ **Professional Rack System**: Inventory-style rack mounting with 19" standard support and multi-unit equipment
+- ✅ **Automatic Cable Length Calculation**: Real-time length approximation with practical routing factors and dynamic updates
 - ✅ **Production-Ready UI**: Optimized for accessibility with large touch targets and clear visual hierarchy
 
-**🎯 PROFESSIONAL STUDIO PLANNING COMPLETE**: StudioFlow now provides complete visual studio design with equipment management, cable routing, rack mounting, and comprehensive project overview - ready for professional use.
+**🎯 PROFESSIONAL STUDIO PLANNING COMPLETE**: StudioFlow now provides complete visual studio design with equipment management, cable routing with length calculation, rack mounting, and comprehensive project overview - ready for professional use.
 
-## Current Development: Rack Mounting System ✅ COMPLETED
+## Previous Major Development: Rack Mounting System ✅ COMPLETED
 
-### Rack Mounting System Complete ✅ (Latest)
+### Rack Mounting System Complete ✅
 - **Inventory-Style Interface**: Adventure game-style rack space component showing individual 1U-12U slots
 - **RackSpaceComponent**: New component integrated into PropertiesPanel when rack is selected
 - **Drag-and-Drop Mounting**: Direct drag from gear library to specific rack positions with visual feedback
