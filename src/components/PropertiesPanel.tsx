@@ -209,12 +209,29 @@ export function PropertiesPanel({
                       </Group>
                       
                       {/* Connection Endpoints */}
-                      <div>
-                        <Text size="sm" c="dimmed">From</Text>
-                        <Text size="sm" mb="xs">{fromNode?.name} • {fromConnection?.name}</Text>
-                        <Text size="sm" c="dimmed">To</Text>
-                        <Text size="sm">{toNode?.name} • {toConnection?.name}</Text>
-                      </div>
+                      <Stack gap="xs">
+                        <Group p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                          <div style={{ flex: 1 }}>
+                            <Text size="xs" c="dimmed" mb={2}>From</Text>
+                            <Text size="xs" fw={500}>{fromNode?.name}</Text>
+                            <Text size="xs" c="dimmed">{fromConnection?.name}</Text>
+                          </div>
+                          <Badge variant="light" color="green" size="xs">
+                            Output
+                          </Badge>
+                        </Group>
+                        
+                        <Group p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                          <div style={{ flex: 1 }}>
+                            <Text size="xs" c="dimmed" mb={2}>To</Text>
+                            <Text size="xs" fw={500}>{toNode?.name}</Text>
+                            <Text size="xs" c="dimmed">{toConnection?.name}</Text>
+                          </div>
+                          <Badge variant="light" color="blue" size="xs">
+                            Input
+                          </Badge>
+                        </Group>
+                      </Stack>
                     </div>
                   )
                 })()}
