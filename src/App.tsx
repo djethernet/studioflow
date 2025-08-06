@@ -4,6 +4,7 @@ import { LibraryPanel } from './components/LibraryPanel'
 import { Canvas } from './components/Canvas'
 import { ConnectionsCanvas } from './components/ConnectionsCanvas'
 import { EquipmentPanel } from './components/EquipmentPanel'
+import { BOMPanel } from './components/BOMPanel'
 import LogPanel from './components/LogPanel'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Tabs.List>
           <Tabs.Tab value="layout">Layout</Tabs.Tab>
           <Tabs.Tab value="connections">Connections</Tabs.Tab>
+          <Tabs.Tab value="bom">Project Summary</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex' }}>
@@ -26,6 +28,10 @@ function App() {
         <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex' }}>
           <ConnectionsCanvas />
           <EquipmentPanel showConnections={true} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="bom" style={{ flex: 1, display: 'flex' }}>
+          <BOMPanel />
         </Tabs.Panel>
       </Tabs>
       <LogPanel />
