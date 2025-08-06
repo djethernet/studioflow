@@ -82,6 +82,11 @@ type StudioState = {
   unmountItemFromRack: (itemId: string) => void
   getRackMountedItems: (rackId: string) => StudioItem[]
   getAvailableRackPositions: (rackId: string, itemRackUnits: number) => number[]
+  
+  // Project save/load actions
+  exportStudioData: () => unknown
+  importStudioData: (data: unknown) => void
+  resetStudioData: () => void
 }
 
 // Sample library data (templates)
@@ -690,5 +695,87 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     })
     
     set({ nodeConnections: updatedConnections })
+  },
+  
+  // Project save/load actions
+  exportStudioData: () => {
+    const state = get()
+    
+    // Helper function to remove undefined values and flatten nested arrays
+    const cleanForFirestore = (obj: unknown): unknown => {
+      if (Array.isArray(obj)) {
+        // Check if this is a nested array (array containing arrays)
+        const hasNestedArrays = obj.some(item => Array.isArray(item))
+        if (hasNestedArrays) {
+          console.warn('Found nested array, flattening:', obj)
+          // Flatten nested arrays
+          const flattened = obj.flat()
+          return flattened.map(cleanForFirestore).filter(item => item !== undefined)
+        }
+        return obj.map(cleanForFirestore).filter(item => item !== undefined)
+      } else if (obj !== null && typeof obj === 'object') {
+        const cleaned: Record<string, unknown> = {}
+        for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+          if (value !== undefined) {
+            const cleanedValue = cleanForFirestore(value)
+            // Additional check - don't include if it became an empty array after cleaning
+            if (Array.isArray(cleanedValue) && cleanedValue.length === 0 && Array.isArray(value) && value.length > 0) {
+              console.warn(`Array field '${key}' became empty after cleaning, skipping`)
+              continue
+            }
+            cleaned[key] = cleanedValue
+          }
+        }
+        return cleaned
+      }
+      return obj
+    }
+    
+    const rawData = {
+      studioItems: state.studioItems,
+      nodeConnections: state.nodeConnections,
+      viewport: state.viewport,
+      connectionsViewport: state.connectionsViewport,
+      nodePositions: Object.fromEntries(state.nodePositions), // Convert Map to object instead of array of arrays
+      timestamp: new Date().toISOString()
+    }
+    
+    // Clean the data to remove all undefined values and handle nested arrays
+    return cleanForFirestore(rawData)
+  },
+  
+  importStudioData: (data) => {
+    if (!data || typeof data !== 'object' || data === null) {
+      console.warn('Invalid studio data provided for import')
+      return
+    }
+    
+    const studioData = data as Record<string, unknown>
+    
+    set({
+      studioItems: studioData.studioItems || [],
+      nodeConnections: studioData.nodeConnections || [],
+      viewport: studioData.viewport || { offsetX: 0, offsetY: 0, zoom: 50 },
+      connectionsViewport: studioData.connectionsViewport || { offsetX: 200, offsetY: 150, zoom: 80 },
+      nodePositions: studioData.nodePositions ? new Map(Object.entries(studioData.nodePositions as Record<string, { x: number, y: number }>)) : new Map(), // Convert object back to Map
+      selectedStudioItemId: null, // Reset selection
+      logMessages: [] // Clear logs on project load
+    })
+    
+    console.log('Studio data imported successfully')
+  },
+  
+  resetStudioData: () => {
+    set({
+      studioItems: [],
+      nodeConnections: [],
+      selectedStudioItemId: null,
+      viewport: { offsetX: 0, offsetY: 0, zoom: 50 },
+      connectionsViewport: { offsetX: 200, offsetY: 150, zoom: 80 },
+      nodePositions: new Map(),
+      logMessages: []
+    })
+    
+    console.log('Studio data reset')
   }
 }))

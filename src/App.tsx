@@ -1,41 +1,42 @@
-import { useState } from 'react'
-import { Tabs } from '@mantine/core'
-import { LibraryPanel } from './components/LibraryPanel'
-import { Canvas } from './components/Canvas'
-import { ConnectionsCanvas } from './components/ConnectionsCanvas'
-import { EquipmentPanel } from './components/EquipmentPanel'
-import { BOMPanel } from './components/BOMPanel'
-import LogPanel from './components/LogPanel'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContextProvider'
+import { LoginPage } from './components/Auth/LoginPage'
+import { SignupPage } from './components/Auth/SignupPage'
+import { ResetPasswordPage } from './components/Auth/ResetPasswordPage'
+import { ProjectsPage } from './components/Projects/ProjectsPage'
+import { StudioInterface } from './components/StudioInterface'
+import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<string | null>('layout')
-
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Tabs value={activeTab} onChange={setActiveTab} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Tabs.List>
-          <Tabs.Tab value="layout">Layout</Tabs.Tab>
-          <Tabs.Tab value="connections">Connections</Tabs.Tab>
-          <Tabs.Tab value="bom">Project Summary</Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex' }}>
-          <LibraryPanel />
-          <Canvas />
-          <EquipmentPanel />
-        </Tabs.Panel>
-
-        <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex' }}>
-          <ConnectionsCanvas />
-          <EquipmentPanel showConnections={true} />
-        </Tabs.Panel>
-
-        <Tabs.Panel value="bom" style={{ flex: 1, display: 'flex' }}>
-          <BOMPanel />
-        </Tabs.Panel>
-      </Tabs>
-      <LogPanel />
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          
+          {/* Protected routes */}
+          <Route path="/projects" element={
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/studio/:projectId" element={
+            <ProtectedRoute>
+              <StudioInterface />
+            </ProtectedRoute>
+          } />
+          
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/projects" replace />} />
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/projects" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   )
 }
 
