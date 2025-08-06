@@ -9,18 +9,18 @@ interface PropertiesPanelProps {
   selectedItem?: StudioItem
   selectedLibraryItem?: LibraryItem
   selectedConnection?: NodeConnection
-  
+
   // Editing capabilities
   allowNameEditing?: boolean
   onNameUpdate?: (id: string, name: string) => void
-  
+
   // Additional data for studio items
   studioItems?: StudioItem[]
 }
 
-export function PropertiesPanel({ 
-  selectedItem, 
-  selectedLibraryItem, 
+export function PropertiesPanel({
+  selectedItem,
+  selectedLibraryItem,
   selectedConnection,
   allowNameEditing = false,
   onNameUpdate,
@@ -177,21 +177,42 @@ export function PropertiesPanel({
 
           {/* Connection Details */}
           <div>
-            <Text fw={500} size="sm" mb="xs">Connection Details</Text>
-            <Stack gap="xs">
-              <Group p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" fw={500}>From:</Text>
-                  <Text size="xs">{studioItems.find(item => item.id === selectedConnection.fromNodeId)?.name}</Text>
-                </div>
-              </Group>
-              <Group p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                <div style={{ flex: 1 }}>
-                  <Text size="xs" fw={500}>To:</Text>
-                  <Text size="xs">{studioItems.find(item => item.id === selectedConnection.toNodeId)?.name}</Text>
-                </div>
-              </Group>
-            </Stack>
+            <Group p="md" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+              <Stack gap="sm" style={{ flex: 1 }}>
+                {/* Cable and Conversion Badges */}
+
+                {/* From/To Information */}
+                <Stack gap="xs">
+                  <Text size="sm">
+                    {(() => {
+                      const fromNode = studioItems.find(item => item.id === selectedConnection.fromNodeId)
+                      const toNode = studioItems.find(item => item.id === selectedConnection.toNodeId)
+                      const fromConnection = fromNode?.connections.find(conn => conn.id === selectedConnection.fromConnectionId)
+                      const toConnection = toNode?.connections.find(conn => conn.id === selectedConnection.toConnectionId)
+                      const isConversion = fromConnection && toConnection && fromConnection.physical !== toConnection.physical
+                      return (
+                        <div>
+                          <Group gap="sm">
+                            <Badge variant="light" color="orange" size="xs">
+                              Cable
+                            </Badge>
+                            <Text size="sm" fw={500} style={{ flex: 1 }}>
+                              {fromConnection?.physical} to  {toConnection?.physical}
+                              {isConversion ? " Conversion" : ""} Cable
+                            </Text>
+                          </Group>
+
+                          <Text>{fromNode?.name} {fromConnection?.name}</Text>
+                          <Text component="span" fw={500}>→ </Text>
+                          <Text> {toNode?.name} {toConnection?.name}</Text>
+                        </div>
+                      )
+                    }
+                    )()}
+                  </Text>
+                </Stack>
+              </Stack>
+            </Group>
           </div>
         </Stack>
       )}
