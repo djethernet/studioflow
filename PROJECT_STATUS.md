@@ -121,7 +121,7 @@ All items display actual product photos in the properties panel for professional
 ✅ **Completed**: Visual cable routing and connection system with full node editor
 ✅ **Completed**: Connection validation and error checking with smart compatibility rules
 ✅ **Completed**: Professional rack mounting system with inventory-style interface
-❌ **Missing**: BOM/cable list export functionality  
+✅ **Completed**: BOM/cable list export functionality with CSV and PDF export
 ❌ **Missing**: 3D preview capability  
 
 ### Target Users
@@ -184,7 +184,17 @@ All items display actual product photos in the properties panel for professional
 
 ## Recent Development Progress
 
-### Cable Length Calculation System Complete ✅ (Latest)
+### Project Summary & Export System Complete ✅ (Latest)
+- **Project Summary Tab**: Added third main tab alongside Layout and Connections for complete project overview
+- **Equipment Bill of Materials**: Professional equipment list with automatic deduplication and quantity counting
+- **Cable Bill of Materials**: Complete cable list with calculated lengths and connector types
+- **Professional Export Options**: CSV and PDF export with studio-project-summary.pdf filename
+- **HTML-to-PDF Conversion**: High-quality PDF export using html2pdf.js preserving all styling and badges
+- **Summary Statistics**: Total equipment count, cable count, and total cable length display
+- **User-Friendly Naming**: Changed from technical "BOM" to accessible "Project Summary" for target users
+- **Export Format Consistency**: Professional table formatting matching screen display exactly
+
+### Cable Length Calculation System Complete ✅ (Previous)
 - **Automatic Length Calculation**: Real-time cable length approximation based on physical item positions
 - **Practical Routing Factor**: 20% extra length + 1m minimum to account for realistic cable routing (not straight-line)
 - **Dynamic Updates**: Cable lengths automatically recalculate when equipment is moved on canvas
@@ -231,9 +241,10 @@ All items display actual product photos in the properties panel for professional
 - ✅ **Dual-View Architecture**: Seamless switching between Layout and Connections views with unified equipment panel
 - ✅ **Professional Rack System**: Inventory-style rack mounting with 19" standard support and multi-unit equipment
 - ✅ **Automatic Cable Length Calculation**: Real-time length approximation with practical routing factors and dynamic updates
+- ✅ **Project Summary & Export System**: Complete BOM functionality with CSV and PDF export capabilities
 - ✅ **Production-Ready UI**: Optimized for accessibility with large touch targets and clear visual hierarchy
 
-**🎯 PROFESSIONAL STUDIO PLANNING COMPLETE**: StudioFlow now provides complete visual studio design with equipment management, cable routing with length calculation, rack mounting, and comprehensive project overview - ready for professional use.
+**🎯 COMPLETE PROFESSIONAL WORKFLOW**: StudioFlow now provides end-to-end studio planning from visual design to professional export documentation - ready for professional use by studio designers, AV integrators, and producers.
 
 ## Previous Major Development: Rack Mounting System ✅ COMPLETED
 
@@ -262,4 +273,4 @@ All items display actual product photos in the properties panel for professional
 - **Equipment Creation**: Automatic studio item creation when dragging library items directly to rack
 - **Professional UI**: Consistent styling with existing components using Mantine design system
 
-**Next Priority**: BOM/Cable List Export functionality to complete professional workflow tools.
+**Next Priority**: 3D preview capability and advanced canvas features (rotation, multi-select, undo/redo).
