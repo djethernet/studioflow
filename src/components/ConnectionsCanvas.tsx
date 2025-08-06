@@ -74,15 +74,15 @@ export function ConnectionsCanvas() {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect) return { x: 0, y: 0 }
     
-    const normalizedX = (screenX - rect.left) / rect.width
-    const normalizedY = (screenY - rect.top) / rect.height
+    const normalizedX = (screenX - rect.left) / containerDimensions.width
+    const normalizedY = (screenY - rect.top) / containerDimensions.height
     
     const viewBox = getViewBox()
     const worldX = viewBox.x + (normalizedX * viewBox.width)
     const worldY = viewBox.y + (normalizedY * viewBox.height)
     
     return { x: worldX, y: worldY }
-  }, [getViewBox])
+  }, [getViewBox, containerDimensions])
 
   // Helper function to truncate text if longer than specified characters
   const truncateText = (text: string, maxLength: number = 20): string => {
