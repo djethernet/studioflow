@@ -18,25 +18,45 @@ StudioFlow is a web-based tool for visually designing audio studios, aimed at mu
 ## Project Structure
 ```
 src/
-├── App.tsx                     # Main app component with tabbed layout
-├── App.css                     # Application styling
-├── main.tsx                    # Entry point with MantineProvider
-├── index.css                   # Global styles
+├── App.tsx                     # Main app component with Firebase auth + tabbed layout
+├── App.css                     # Application styling with Mantine theme integration
+├── main.tsx                    # Entry point with MantineProvider + Firebase config
+├── index.css                   # Global styles and CSS variables
 ├── components/
-│   ├── LibraryPanel.tsx        # Gear library with search and selection
-│   ├── Canvas.tsx              # Interactive 2D layout canvas with pan/zoom/drag-drop
-│   ├── ConnectionsCanvas.tsx   # Visual node editor for cable routing
-│   ├── EquipmentPanel.tsx      # Equipment management with properties display
-│   ├── LogPanel.tsx            # Connection validation and feedback logging
-│   └── PropertiesPanel.tsx     # Detailed item properties and specifications
+│   ├── auth/
+│   │   ├── LoginPage.tsx       # Email/password login with Firebase auth
+│   │   ├── RegisterPage.tsx    # User registration with email validation
+│   │   └── ProjectDashboard.tsx # User projects list with create/delete/open
+│   ├── layout/
+│   │   ├── LibraryPanel.tsx    # Gear library with search/filter/drag functionality
+│   │   ├── Canvas.tsx          # Interactive 2D SVG canvas with pan/zoom/drag-drop
+│   │   ├── ConnectionsCanvas.tsx # Visual node editor for cable routing (curved splines)
+│   │   ├── EquipmentPanel.tsx  # Resizable equipment list with selection sync
+│   │   ├── PropertiesPanel.tsx # Item properties, rack mounting interface, cable details
+│   │   ├── LogPanel.tsx        # Connection validation feedback with error/success states
+│   │   └── ProjectSummary.tsx  # BOM export with equipment/cable lists and PDF export
+│   └── rack/
+│       └── RackSpaceComponent.tsx # Inventory-style rack mounting interface (1U-12U slots)
 ├── stores/
-│   └── studioStore.ts          # Unified data store (Model-View architecture)
+│   └── studioStore.ts          # Unified Zustand store with Firebase persistence
 ├── types/
-│   └── StudioItem.ts           # Core type definitions (Library + Studio items)
+│   ├── StudioItem.ts           # Core type definitions (LibraryItem + StudioItem + Connections)
+│   └── index.ts                # Type exports and Firebase user types
+├── utils/
+│   └── firebase.ts             # Firebase config and authentication utilities
 └── assets/
     ├── react.svg
-    └── library_images/         # Product images for gear library
+    └── library_images/         # Product images (Genelec, MOTU, Roland, Yamaha, etc.)
 ```
+
+### Key File Descriptions
+- **App.tsx**: Main router with protected routes, auth state management, project context
+- **studioStore.ts**: Complete project state with library items, studio instances, connections, canvas viewport
+- **Canvas.tsx**: SVG-based 2D canvas with coordinate transformation, grid rendering, item interaction
+- **ConnectionsCanvas.tsx**: Professional node editor with Bézier curves, drag-to-connect, validation
+- **ProjectSummary.tsx**: Professional BOM export with HTML-to-PDF conversion and CSV export
+- **RackSpaceComponent.tsx**: Adventure game-style rack inventory with drag-drop mounting
+- **firebase.ts**: Authentication, Firestore rules, project persistence, real-time sync
 
 ## Completed Features
 
