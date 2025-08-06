@@ -177,41 +177,49 @@ export function PropertiesPanel({
 
           {/* Connection Details */}
           <div>
-            
-              <Stack gap="sm" style={{ flex: 1 }}>
-                {/* Cable and Conversion Badges */}
-
-                {/* From/To Information */}
-                <Stack gap="xs">
-                  <Text size="sm">
-                    {(() => {
-                      const fromNode = studioItems.find(item => item.id === selectedConnection.fromNodeId)
-                      const toNode = studioItems.find(item => item.id === selectedConnection.toNodeId)
-                      const fromConnection = fromNode?.connections.find(conn => conn.id === selectedConnection.fromConnectionId)
-                      const toConnection = toNode?.connections.find(conn => conn.id === selectedConnection.toConnectionId)
-                      const isConversion = fromConnection && toConnection && fromConnection.physical !== toConnection.physical
-                      return (
-                        <div>
-                          <Group gap="sm">
-                            <Badge variant="light" color="orange" size="xs">
-                              Cable
-                            </Badge>
-                            <Text size="sm" fw={500} style={{ flex: 1 }}>
-                              {fromConnection?.physical} to  {toConnection?.physical}
-                              {isConversion ? " Conversion" : ""} Cable
-                            </Text>
-                          </Group>
-                          <Text size="sm" c="dimmed">From</Text>
-                          <Text> {fromNode?.name} {fromConnection?.name}</Text>
-                          <Text size="sm" c="dimmed">To</Text>
-                          <Text> {toNode?.name} {toConnection?.name}</Text>
-                        </div>
-                      )
-                    }
-                    )()}
-                  </Text>
-                </Stack>
+            <Stack gap="sm" style={{ flex: 1 }}>
+              {/* Cable Type and Length */}
+              <Stack gap="xs">
+                {(() => {
+                  const fromNode = studioItems.find(item => item.id === selectedConnection.fromNodeId)
+                  const toNode = studioItems.find(item => item.id === selectedConnection.toNodeId)
+                  const fromConnection = fromNode?.connections.find(conn => conn.id === selectedConnection.fromConnectionId)
+                  const toConnection = toNode?.connections.find(conn => conn.id === selectedConnection.toConnectionId)
+                  const isConversion = fromConnection && toConnection && fromConnection.physical !== toConnection.physical
+                  return (
+                    <div>
+                      <Group gap="sm" mb="sm">
+                        <Badge variant="light" color="orange" size="xs">
+                          Cable
+                        </Badge>
+                        <Text size="sm" fw={500} style={{ flex: 1 }}>
+                          {fromConnection?.physical} to {toConnection?.physical}
+                          {isConversion ? " Conversion" : ""} Cable
+                        </Text>
+                      </Group>
+                      
+                      {/* Cable Length */}
+                      <Group gap="sm" mb="sm">
+                        <Badge variant="light" color="blue" size="xs">
+                          Length
+                        </Badge>
+                        <Text size="sm" fw={500}>
+                          {selectedConnection.length}m
+                        </Text>
+                      </Group>
+                      
+                      {/* Connection Endpoints */}
+                      <div>
+                        <Text size="sm" c="dimmed">From</Text>
+                        <Text size="sm" mb="xs">{fromNode?.name} • {fromConnection?.name}</Text>
+                        <Text size="sm" c="dimmed">To</Text>
+                        <Text size="sm">{toNode?.name} • {toConnection?.name}</Text>
+                      </div>
+                    </div>
+                  )
+                })()}
               </Stack>
+            </Stack>
           </div>
         </Stack>
       )}

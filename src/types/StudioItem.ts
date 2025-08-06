@@ -81,4 +81,5 @@ export interface NodeConnection {
   fromConnectionId: string
   toNodeId: string
   toConnectionId: string
+  length: number // Cable length in meters
 }

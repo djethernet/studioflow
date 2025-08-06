@@ -3,6 +3,20 @@ import { v4 as uuidv4 } from 'uuid'
 import type { LibraryItem, StudioItem, Viewport, NodeConnection } from '../types/StudioItem'
 import type { LogMessage, LogLevel } from '../components/LogPanel'
 
+// Utility function to calculate cable length between two studio items
+function calculateCableLength(fromItem: StudioItem, toItem: StudioItem): number {
+  const dx = toItem.position.x - fromItem.position.x
+  const dy = toItem.position.y - fromItem.position.y
+  const straightLineDistance = Math.sqrt(dx * dx + dy * dy)
+  
+  // Add some extra length for practical cable routing (20% extra + 1m minimum for routing)
+  // This accounts for the fact that cables don't run in straight lines
+  const practicalLength = straightLineDistance * 1.2 + 1.0
+  
+  // Round to nearest 0.1m for practical cable lengths
+  return Math.round(practicalLength * 10) / 10
+}
+
 type StudioState = {
   // Library templates (read-only gear definitions)
   libraryItems: LibraryItem[]
@@ -53,6 +67,7 @@ type StudioState = {
   removeNodeConnection: (connectionId: string) => void
   getNodeConnections: () => NodeConnection[]
   validateConnection: (fromNodeId: string, fromConnectionId: string, toNodeId: string, toConnectionId: string) => { valid: boolean, reason?: string }
+  recalculateAllCableLengths: () => void
   
   // Viewport actions
   updateViewport: (viewport: Partial<Viewport>) => void
@@ -294,11 +309,16 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     return newId
   },
   
-  updateStudioItemPosition: (id, x, y) => set((state) => ({
-    studioItems: state.studioItems.map((item) => 
-      item.id === id ? { ...item, position: { x, y } } : item
-    )
-  })),
+  updateStudioItemPosition: (id, x, y) => {
+    set((state) => ({
+      studioItems: state.studioItems.map((item) => 
+        item.id === id ? { ...item, position: { x, y } } : item
+      )
+    }))
+    
+    // Recalculate cable lengths after position update
+    get().recalculateAllCableLengths()
+  },
 
   updateStudioItemRotation: (id, rotation) => set((state) => ({
     studioItems: state.studioItems.map((item) => 
@@ -492,13 +512,19 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       return false
     }
     
-    // Generate cable name based on connected devices and connection types
+    // Generate cable name and calculate length based on connected devices
     const { studioItems } = get()
     const fromNode = studioItems.find(item => item.id === fromNodeId)
     const toNode = studioItems.find(item => item.id === toNodeId)
     const fromConnection = fromNode?.connections.find(conn => conn.id === fromConnectionId)
     
-    const cableName = `${fromNode?.name} → ${toNode?.name} (${fromConnection?.physical})`
+    if (!fromNode || !toNode) {
+      get().addLogMessage('error', 'Cannot find connected devices for cable length calculation')
+      return false
+    }
+    
+    const cableName = `${fromNode.name} → ${toNode.name} (${fromConnection?.physical})`
+    const cableLength = calculateCableLength(fromNode, toNode)
     
     const newConnection: NodeConnection = {
       id: uuidv4(),
@@ -506,7 +532,8 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       fromNodeId,
       fromConnectionId,
       toNodeId,
-      toConnectionId
+      toConnectionId,
+      length: cableLength
     }
     
     set((state) => ({
@@ -644,5 +671,24 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     }
     
     return availablePositions
+  },
+  
+  // Recalculate all cable lengths when item positions change
+  recalculateAllCableLengths: () => {
+    const { nodeConnections, studioItems } = get()
+    
+    const updatedConnections = nodeConnections.map(connection => {
+      const fromNode = studioItems.find(item => item.id === connection.fromNodeId)
+      const toNode = studioItems.find(item => item.id === connection.toNodeId)
+      
+      if (fromNode && toNode) {
+        const newLength = calculateCableLength(fromNode, toNode)
+        return { ...connection, length: newLength }
+      }
+      
+      return connection
+    })
+    
+    set({ nodeConnections: updatedConnections })
   }
 }))
