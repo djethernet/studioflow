@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Paper, Title, Group, Button, Table, Badge, Stack, Text, Divider } from '@mantine/core'
 import { useStudioStore } from '../stores/studioStore'
 import { IconDownload, IconFileText } from '@tabler/icons-react'
 import type { StudioItem } from '../types/StudioItem'
+import html2pdf from 'html2pdf.js'
 
 export function BOMPanel() {
   const { getAllStudioItems, getNodeConnections } = useStudioStore()
+  const printRef = useRef<HTMLDivElement>(null)
   
   const allItems = getAllStudioItems()
   const allConnections = getNodeConnections()
@@ -54,6 +56,20 @@ export function BOMPanel() {
       <Table.Td>1</Table.Td>
     </Table.Tr>
   ))
+
+  const exportToPDF = () => {
+    if (!printRef.current) return
+
+    const opt = {
+      margin: 1,
+      filename: 'studio-project-summary.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    }
+
+    html2pdf().set(opt).from(printRef.current).save()
+  }
 
   const exportToCSV = () => {
     const csvData = [
@@ -119,7 +135,7 @@ export function BOMPanel() {
             <Button 
               leftSection={<IconFileText size={16} />}
               variant="outline"
-              disabled
+              onClick={exportToPDF}
             >
               Export PDF
             </Button>
@@ -127,7 +143,8 @@ export function BOMPanel() {
         </Group>
 
         <div style={{ flex: 1, overflow: 'auto' }}>
-          <Stack gap="xl">
+          <div ref={printRef}>
+            <Stack gap="xl">
             {/* Equipment Section */}
             <div>
               <Group mb="md">
@@ -200,7 +217,8 @@ export function BOMPanel() {
                 </Badge>
               </Group>
             </div>
-          </Stack>
+            </Stack>
+          </div>
         </div>
       </Paper>
     </div>
