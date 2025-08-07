@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { Box, Text, TextInput, ScrollArea, Stack, Paper } from '@mantine/core'
+import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group } from '@mantine/core'
+import { IconPlus } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
+import { AddGearModal, type GearFormData } from './AddGearModal'
 import type { LibraryItem } from '../types/StudioItem'
 
 export function LibraryPanel() {
@@ -10,10 +12,12 @@ export function LibraryPanel() {
     searchQuery, 
     setSelectedLibraryItem, 
     setSearchQuery, 
-    getFilteredLibraryItems 
+    getFilteredLibraryItems,
+    addLibraryItem
   } = useStudioStore()
   
   const [splitHeight, setSplitHeight] = useState(60) // Percentage for gear list
+  const [addModalOpened, setAddModalOpened] = useState(false)
   const filteredItems = getFilteredLibraryItems()
 
   const handleItemClick = (item: LibraryItem) => {
@@ -23,6 +27,11 @@ export function LibraryPanel() {
   const handleDragStart = (e: React.DragEvent, item: LibraryItem) => {
     e.dataTransfer.setData('application/json', JSON.stringify(item))
     e.dataTransfer.effectAllowed = 'copy'
+  }
+
+  const handleAddGear = (gearData: GearFormData) => {
+    addLibraryItem(gearData)
+    setAddModalOpened(false)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -60,7 +69,16 @@ export function LibraryPanel() {
         }}
       >
         <Box mb="sm">
-           <Text fw={700} size="lg" mb="sm">Catalog</Text>
+          <Group justify="space-between" mb="sm">
+            <Text fw={700} size="lg">Catalog</Text>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              size="xs"
+              onClick={() => setAddModalOpened(true)}
+            >
+              Add Gear
+            </Button>
+          </Group>
           <TextInput
             placeholder="Search gear..."
             value={searchQuery}
@@ -115,6 +133,12 @@ export function LibraryPanel() {
           allowNameEditing={false}
         />
       </Paper>
+
+      <AddGearModal
+        opened={addModalOpened}
+        onClose={() => setAddModalOpened(false)}
+        onSubmit={handleAddGear}
+      />
     </div>
   )
 }

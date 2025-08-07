@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { LibraryItem, StudioItem, Viewport, NodeConnection } from '../types/StudioItem'
 import type { LogMessage, LogLevel } from '../components/LogPanel'
+import type { GearFormData } from '../components/AddGearModal'
 
 // Utility function to calculate cable length between two studio items
 function calculateCableLength(fromItem: StudioItem, toItem: StudioItem): number {
@@ -42,6 +43,7 @@ type StudioState = {
   setSelectedLibraryItem: (item: LibraryItem | null) => void
   setSearchQuery: (query: string) => void
   getFilteredLibraryItems: () => LibraryItem[]
+  addLibraryItem: (gearData: GearFormData) => void
   
   // Studio item actions
   addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => string
@@ -280,6 +282,34 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category?.toLowerCase().includes(searchQuery.toLowerCase())
     )
+  },
+
+  addLibraryItem: (gearData: GearFormData) => {
+    const { libraryItems } = get()
+    
+    // Generate next ID (max current ID + 1)
+    const maxId = Math.max(...libraryItems.map(item => item.id), 0)
+    
+    const newLibraryItem: LibraryItem = {
+      id: maxId + 1,
+      name: gearData.name,
+      productModel: gearData.productModel,
+      dimensions: {
+        width: gearData.width,
+        height: gearData.height
+      },
+      connections: gearData.connections,
+      category: gearData.category,
+      rackUnits: gearData.rackUnits,
+      isRack: gearData.isRack,
+      rackCapacity: gearData.isRack ? gearData.rackCapacity : undefined
+    }
+    
+    set((state) => ({
+      libraryItems: [...state.libraryItems, newLibraryItem]
+    }))
+    
+    get().addLogMessage('success', `Custom gear "${gearData.name}" added to library`)
   },
   
   // Studio item actions
