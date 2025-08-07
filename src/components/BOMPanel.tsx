@@ -45,17 +45,41 @@ export function BOMPanel() {
     </Table.Tr>
   ))
 
-  const cableRows = allConnections.map((connection) => (
-    <Table.Tr key={connection.id}>
-      <Table.Td>{connection.name}</Table.Td>
-      <Table.Td>
-        <Badge color="green" variant="light">
-          {connection.length}m
-        </Badge>
-      </Table.Td>
-      <Table.Td>1</Table.Td>
-    </Table.Tr>
-  ))
+  const cableRows = allConnections.map((connection) => {
+    // Find the connected items and their connection details to determine cable type
+    const fromNode = allItems.find(item => item.id === connection.fromNodeId)
+    const toNode = allItems.find(item => item.id === connection.toNodeId)
+    const fromConnection = fromNode?.connections.find(conn => conn.id === connection.fromConnectionId)
+    const toConnection = toNode?.connections.find(conn => conn.id === connection.toConnectionId)
+    
+    // Build cable type string in format: "Type to Type (Conversion) Cable"
+    let cableType = ''
+    if (fromConnection && toConnection) {
+      const isConversion = fromConnection.physical !== toConnection.physical
+      cableType = `${fromConnection.physical} to ${toConnection.physical}${isConversion ? ' Conversion' : ''} Cable`
+    }
+    
+    return (
+      <Table.Tr key={connection.id}>
+        <Table.Td>
+          <div>
+            <div style={{ fontWeight: 500 }}>{connection.name}</div>
+            {cableType && (
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                {cableType}
+              </div>
+            )}
+          </div>
+        </Table.Td>
+        <Table.Td>
+          <Badge color="green" variant="light">
+            {connection.length}m
+          </Badge>
+        </Table.Td>
+        <Table.Td>1</Table.Td>
+      </Table.Tr>
+    )
+  })
 
   const exportToPDF = () => {
     if (!printRef.current) return
@@ -86,12 +110,28 @@ export function BOMPanel() {
       ]),
       [''],
       ['Cable List'],
-      ['Cable Name', 'Length', 'Quantity'],
-      ...allConnections.map(connection => [
-        connection.name,
-        `${connection.length}m`,
-        '1'
-      ])
+      ['Cable Name', 'Cable Type', 'Length', 'Quantity'],
+      ...allConnections.map(connection => {
+        // Find the connected items and their connection details to determine cable type
+        const fromNode = allItems.find(item => item.id === connection.fromNodeId)
+        const toNode = allItems.find(item => item.id === connection.toNodeId)
+        const fromConnection = fromNode?.connections.find(conn => conn.id === connection.fromConnectionId)
+        const toConnection = toNode?.connections.find(conn => conn.id === connection.toConnectionId)
+        
+        // Build cable type string
+        let cableType = ''
+        if (fromConnection && toConnection) {
+          const isConversion = fromConnection.physical !== toConnection.physical
+          cableType = `${fromConnection.physical} to ${toConnection.physical}${isConversion ? ' Conversion' : ''} Cable`
+        }
+        
+        return [
+          connection.name,
+          cableType,
+          `${connection.length}m`,
+          '1'
+        ]
+      })
     ]
 
     const csvContent = csvData.map(row => 

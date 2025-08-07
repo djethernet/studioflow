@@ -521,14 +521,13 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const { studioItems } = get()
     const fromNode = studioItems.find(item => item.id === fromNodeId)
     const toNode = studioItems.find(item => item.id === toNodeId)
-    const fromConnection = fromNode?.connections.find(conn => conn.id === fromConnectionId)
     
     if (!fromNode || !toNode) {
       get().addLogMessage('error', 'Cannot find connected devices for cable length calculation')
       return false
     }
     
-    const cableName = `${fromNode.name} → ${toNode.name} (${fromConnection?.physical})`
+    const cableName = `${fromNode.name} → ${toNode.name}`
     const cableLength = calculateCableLength(fromNode, toNode)
     
     const newConnection: NodeConnection = {
@@ -753,10 +752,10 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     const studioData = data as Record<string, unknown>
     
     set({
-      studioItems: studioData.studioItems || [],
-      nodeConnections: studioData.nodeConnections || [],
-      viewport: studioData.viewport || { offsetX: 0, offsetY: 0, zoom: 50 },
-      connectionsViewport: studioData.connectionsViewport || { offsetX: 200, offsetY: 150, zoom: 80 },
+      studioItems: (studioData.studioItems as StudioItem[]) || [],
+      nodeConnections: (studioData.nodeConnections as NodeConnection[]) || [],
+      viewport: (studioData.viewport as Viewport) || { offsetX: 0, offsetY: 0, zoom: 50 },
+      connectionsViewport: (studioData.connectionsViewport as Viewport) || { offsetX: 200, offsetY: 150, zoom: 80 },
       nodePositions: studioData.nodePositions ? new Map(Object.entries(studioData.nodePositions as Record<string, { x: number, y: number }>)) : new Map(), // Convert object back to Map
       selectedStudioItemId: null, // Reset selection
       logMessages: [] // Clear logs on project load
