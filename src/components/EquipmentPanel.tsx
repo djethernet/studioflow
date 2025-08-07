@@ -59,7 +59,7 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
   }
 
   return (
-    <div style={{ width: '350px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '350px', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       {/* Equipment List */}
       <Paper 
         shadow="sm" 

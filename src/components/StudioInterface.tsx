@@ -148,7 +148,7 @@ export const StudioInterface = () => {
       <Tabs 
         value={activeTab} 
         onChange={setActiveTab} 
-        style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
       >
         <Tabs.List>
           <Tabs.Tab value="layout">Layout</Tabs.Tab>
@@ -156,13 +156,13 @@ export const StudioInterface = () => {
           <Tabs.Tab value="bom">Project Summary</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex' }}>
+        <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
           <LibraryPanel />
           <Canvas />
           <EquipmentPanel />
         </Tabs.Panel>
 
-        <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex' }}>
+        <Tabs.Panel value="connections" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
           <ConnectionsCanvas />
           <EquipmentPanel showConnections={true} />
         </Tabs.Panel>
