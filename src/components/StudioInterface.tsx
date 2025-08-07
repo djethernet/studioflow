@@ -12,6 +12,7 @@ import { ProjectService } from '../services/projectService'
 import { useAuth } from '../hooks/useAuth'
 import { useStudioStore } from '../stores/studioStore'
 import type { Project } from '../types/Project'
+import classes from '../css/HeaderTabs.module.css';
 
 export const StudioInterface = () => {
   const { projectId } = useParams<{ projectId: string }>()
@@ -149,11 +150,25 @@ export const StudioInterface = () => {
         value={activeTab} 
         onChange={setActiveTab} 
         style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+        variant="outline"
+        radius="md"
+
+           classNames={{
+            root: classes.tabs,
+            list: classes.tabsList,
+            tab: classes.tab,
+          }}
       >
-        <Tabs.List>
-          <Tabs.Tab value="layout">Layout</Tabs.Tab>
-          <Tabs.Tab value="connections">Connections</Tabs.Tab>
-          <Tabs.Tab value="bom">Project Summary</Tabs.Tab>
+        <Tabs.List 
+          style={{ 
+            backgroundColor: 'var(--mantine-color-gray-0)',
+            borderBottom: '1px solid var(--mantine-color-gray-3)',
+            padding: '0 16px'
+          }}
+        >
+          <Tabs.Tab value="layout" fw={500} size="md">Layout</Tabs.Tab>
+          <Tabs.Tab value="connections" fw={500} size="md">Connections</Tabs.Tab>
+          <Tabs.Tab value="bom" fw={500} size="md">Project Summary</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="layout" style={{ flex: 1, display: 'flex', minHeight: 0 }}>
