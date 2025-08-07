@@ -161,6 +161,11 @@ export function PropertiesPanel({
                       <Badge variant="outline" size="xs">
                         {conn.physical}
                       </Badge>
+                      {(['XLR', 'BNC', 'MIDI'].includes(conn.physical)) && (
+                        <Badge variant="outline" color={conn.way === 'socket' ? 'violet' : 'orange'} size="xs">
+                          {conn.way}
+                        </Badge>
+                      )}
                     </Group>
                   </Group>
                 ))}
