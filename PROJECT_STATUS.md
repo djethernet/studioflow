@@ -291,4 +291,35 @@ All items display actual product photos in the properties panel for professional
 
 
 
-**Next Priority**: 3D preview capability and advanced canvas features (rotation, multi-select, undo/redo).
+## Next Development Goal: User Gear Management System
+
+**Goal**: Enable users to add custom gear to the library through a modal interface. Admin can add global gear visible to all users, while regular users can add personal gear visible only to them. This will expand the gear library beyond the current 7 sample items to support thousands of items with proper search/filtering.
+
+**Key Requirements**:
+- Modal with gear form (Name, ProductName, Dimensions, Category, RackUnits, IsRack, RackCapacity)
+- Dynamic connections editor with add/remove functionality  
+- Add button in LibraryPanel under search
+- Firebase backend to handle global vs user-specific gear
+- Enhanced library filtering for large datasets
+
+## Development Phases - Basic Gear Management (MVP)
+
+### Phase 1: Add Gear Modal ⏳ PLANNED
+- **AddGearModal Component**: Simple modal with form fields using Mantine
+- **Basic Form Fields**: Name, ProductName, Dimensions, Category, RackUnits, IsRack, RackCapacity (conditional)
+- **Connections Panel**: Simple add/remove connections with + button
+- **Modal Trigger**: Add button in LibraryPanel under search
+- **Form Validation**: Basic required field validation
+
+### Phase 2: Firebase Gear Storage ⏳ PLANNED  
+- **User Gear Collection**: Store custom gear in user's Firestore document
+- **Global Gear Collection**: Admin-only collection for shared gear items
+- **Library Integration**: Update LibraryPanel to show both global + user gear
+- **Basic Search/Filter**: Simple text search across combined gear list
+
+### Phase 3: Integration & Polish ⏳ PLANNED
+- **Store Updates**: Integrate new gear into existing studioStore
+- **UI States**: Loading, error, success feedback
+- **Basic Testing**: Ensure add/edit/delete gear works properly
+
+**Next Priority**: Begin Phase 1 - Create basic Add Gear modal with essential form fields.
