@@ -53,7 +53,7 @@ export function PropertiesPanel({
   }
 
   return (
-    <ScrollArea style={{ flex: 1 }}>
+    <ScrollArea style={{ flex: 1, height: '100%', maxHeight: '100vh' }}>
       {displayItem && (
         <Stack gap="md">
           {/* Item Image */}
@@ -147,23 +147,24 @@ export function PropertiesPanel({
           {/* Connections */}
           <div>
             <Text fw={500} size="sm" mb="xs">Connections ({displayItem.connections.length})</Text>
-            <Stack gap="xs">
-              {displayItem.connections.map((conn) => (
-                <Group key={conn.id} p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
-                  <div style={{ flex: 1 }}>
-                    <Text size="xs" fw={500}>{conn.name}</Text>
-                  </div>
-                  <Group gap="xs">
-                    <Badge variant="light" color={conn.direction === 'input' ? 'blue' : 'green'} size="xs">
-                      {conn.direction}
-                    </Badge>
-                    <Badge variant="outline" size="xs">
-                      {conn.physical}
-                    </Badge>
+            
+              <Stack gap="xs">
+                {displayItem.connections.map((conn) => (
+                  <Group key={conn.id} p="xs" style={{ border: '1px solid #e0e0e0', borderRadius: '4px' }}>
+                    <div style={{ flex: 1 }}>
+                      <Text size="xs" fw={500}>{conn.name}</Text>
+                    </div>
+                    <Group gap="xs">
+                      <Badge variant="light" color={conn.direction === 'input' ? 'blue' : 'green'} size="xs">
+                        {conn.direction}
+                      </Badge>
+                      <Badge variant="outline" size="xs">
+                        {conn.physical}
+                      </Badge>
+                    </Group>
                   </Group>
-                </Group>
-              ))}
-            </Stack>
+                ))}
+              </Stack>
           </div>
         </Stack>
       )}
