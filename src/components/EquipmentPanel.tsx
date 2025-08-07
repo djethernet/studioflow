@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Paper, Text, Group, Stack, Divider, Badge, ScrollArea } from '@mantine/core'
+import { Paper, Text, Group, Stack, Divider, Badge, ScrollArea, ActionIcon } from '@mantine/core'
+import { IconX } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
 import type { StudioItem, NodeConnection } from '../types/StudioItem'
@@ -14,11 +15,12 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
     getNodeConnections, 
     selectedStudioItemId, 
     selectStudioItem,
-    updateStudioItemName
+    updateStudioItemName,
+    removeStudioItem
   } = useStudioStore()
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null)
-  const [splitHeight, setSplitHeight] = useState(50) // Percentage for equipment list
+  const [splitHeight, setSplitHeight] = useState(30)// Percentage for equipment list
 
   const studioItems = getAllStudioItems()
   const connections = getNodeConnections()
@@ -35,6 +37,11 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
   const handleConnectionSelect = (connection: NodeConnection) => {
     setSelectedConnectionId(connection.id)
     selectStudioItem(null) // Clear item selection
+  }
+
+  const handleDeleteItem = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation() // Prevent item selection when clicking delete
+    removeStudioItem(itemId)
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -107,6 +114,15 @@ export function EquipmentPanel({ showConnections = false }: EquipmentPanelProps)
                       Not Placed
                     </Badge>
                   )}
+                  <ActionIcon
+                    size="xs"
+                    variant="subtle"
+                    color="grey"
+                    onClick={(e) => handleDeleteItem(e, item.id)}
+                    title="Delete item"
+                  >
+                    <IconX size={12} />
+                  </ActionIcon>
                 </Group>
               </Paper>
             ))}
