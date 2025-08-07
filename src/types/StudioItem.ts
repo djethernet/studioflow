@@ -9,7 +9,7 @@ export interface Connection {
   direction: 'input' | 'output'
   physical: 'XLR' | '1/4' | '1/8' | 'MIDI' | 'USB' | 'TRS' | 'RCA' | 'Optical' | 'BNC'  // Physical connector type
   category: 'unbalanced' | 'balanced' | 'digital' | 'midi' | 'control'           // Signal category
-  way: 'port' | 'socket'               // Port (male) or socket (female)
+  way: 'plug' | 'socket'               // Port (male) or socket (female)
   group?: string
 }
 
@@ -79,7 +79,9 @@ export interface NodeConnection {
   name: string
   fromNodeId: string
   fromConnectionId: string
+  fromWay: 'plug' | 'socket' // Cable end type - opposite of the node's connection way
   toNodeId: string
   toConnectionId: string
+  toWay: 'plug' | 'socket' // Cable end type - opposite of the node's connection way
   length: number // Cable length in meters
 }

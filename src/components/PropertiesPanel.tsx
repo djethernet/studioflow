@@ -3,6 +3,7 @@ import { Text, Group, Stack, Image, Badge, ScrollArea, TextInput, ActionIcon, Di
 import { IconEdit, IconCheck, IconX } from '@tabler/icons-react'
 import type { StudioItem, LibraryItem, NodeConnection } from '../types/StudioItem'
 import { RackSpaceComponent } from './RackSpaceComponent'
+import { formatCableName } from '../utils/cableUtils'
 
 interface PropertiesPanelProps {
   // Item data
@@ -185,7 +186,18 @@ export function PropertiesPanel({
                   const toNode = studioItems.find(item => item.id === selectedConnection.toNodeId)
                   const fromConnection = fromNode?.connections.find(conn => conn.id === selectedConnection.fromConnectionId)
                   const toConnection = toNode?.connections.find(conn => conn.id === selectedConnection.toConnectionId)
-                  const isConversion = fromConnection && toConnection && fromConnection.physical !== toConnection.physical
+                  
+                  if (!fromConnection || !toConnection) {
+                    return null
+                  }
+                  
+                  const cableName = formatCableName(
+                    fromConnection, 
+                    toConnection, 
+                    selectedConnection.fromWay, 
+                    selectedConnection.toWay
+                  )
+                  
                   return (
                     <div>
                       <Group gap="sm" mb="sm">
@@ -193,8 +205,7 @@ export function PropertiesPanel({
                           Cable
                         </Badge>
                         <Text size="sm" fw={500} style={{ flex: 1 }}>
-                          {fromConnection?.physical} to {toConnection?.physical}
-                          {isConversion ? " Conversion" : ""} Cable
+                          {cableName}
                         </Text>
                       </Group>
                       

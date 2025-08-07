@@ -4,6 +4,7 @@ import { useStudioStore } from '../stores/studioStore'
 import { IconDownload, IconFileText } from '@tabler/icons-react'
 import type { StudioItem } from '../types/StudioItem'
 import html2pdf from 'html2pdf.js'
+import { formatCableName } from '../utils/cableUtils'
 
 export function BOMPanel() {
   const { getAllStudioItems, getNodeConnections } = useStudioStore()
@@ -52,11 +53,10 @@ export function BOMPanel() {
     const fromConnection = fromNode?.connections.find(conn => conn.id === connection.fromConnectionId)
     const toConnection = toNode?.connections.find(conn => conn.id === connection.toConnectionId)
     
-    // Build cable type string in format: "Type to Type (Conversion) Cable"
+    // Build cable type string using the reusable formatting function
     let cableType = ''
     if (fromConnection && toConnection) {
-      const isConversion = fromConnection.physical !== toConnection.physical
-      cableType = `${fromConnection.physical} to ${toConnection.physical}${isConversion ? ' Conversion' : ''} Cable`
+      cableType = formatCableName(fromConnection, toConnection, connection.fromWay, connection.toWay)
     }
     
     return (
@@ -118,11 +118,10 @@ export function BOMPanel() {
         const fromConnection = fromNode?.connections.find(conn => conn.id === connection.fromConnectionId)
         const toConnection = toNode?.connections.find(conn => conn.id === connection.toConnectionId)
         
-        // Build cable type string
+        // Build cable type string using the reusable formatting function
         let cableType = ''
         if (fromConnection && toConnection) {
-          const isConversion = fromConnection.physical !== toConnection.physical
-          cableType = `${fromConnection.physical} to ${toConnection.physical}${isConversion ? ' Conversion' : ''} Cable`
+          cableType = formatCableName(fromConnection, toConnection, connection.fromWay, connection.toWay)
         }
         
         return [

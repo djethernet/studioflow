@@ -124,17 +124,17 @@ const sampleLibraryItems: LibraryItem[] = [
       { id: 'motu-line10', name: 'Line Input 10', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
       
       // Main analog outputs (2x XLR)
-      { id: 'motu-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
-      { id: 'motu-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
+      { id: 'motu-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
+      { id: 'motu-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
       // Line outputs (8x TRS)
-      { id: 'motu-out3', name: 'Line Out 3', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out4', name: 'Line Out 4', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out5', name: 'Line Out 5', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out6', name: 'Line Out 6', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out7', name: 'Line Out 7', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out8', name: 'Line Out 8', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out9', name: 'Line Out 9', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'motu-out10', name: 'Line Out 10', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'motu-out3', name: 'Line Out 3', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out4', name: 'Line Out 4', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out5', name: 'Line Out 5', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out6', name: 'Line Out 6', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out7', name: 'Line Out 7', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out8', name: 'Line Out 8', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out9', name: 'Line Out 9', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'motu-out10', name: 'Line Out 10', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
       
       // Headphone outputs (2x front panel)
       { id: 'motu-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
@@ -143,22 +143,22 @@ const sampleLibraryItems: LibraryItem[] = [
       // Digital I/O - ADAT (16 channels total via 2 optical banks)
       { id: 'motu-adat-in-a', name: 'ADAT Bank A In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
       { id: 'motu-adat-in-b', name: 'ADAT Bank B In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
-      { id: 'motu-adat-out-a', name: 'ADAT Bank A Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'port' },
-      { id: 'motu-adat-out-b', name: 'ADAT Bank B Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'port' },
+      { id: 'motu-adat-out-a', name: 'ADAT Bank A Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'plug' },
+      { id: 'motu-adat-out-b', name: 'ADAT Bank B Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'plug' },
       
       // S/PDIF digital (RCA)
       { id: 'motu-spdif-in', name: 'S/PDIF In', direction: 'input', physical: 'RCA', category: 'digital', way: 'socket' },
-      { id: 'motu-spdif-out', name: 'S/PDIF Out', direction: 'output', physical: 'RCA', category: 'digital', way: 'port' },
+      { id: 'motu-spdif-out', name: 'S/PDIF Out', direction: 'output', physical: 'RCA', category: 'digital', way: 'plug' },
       
       // MIDI I/O
       { id: 'motu-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
-      { id: 'motu-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' },
-      { id: 'motu-midi-thru', name: 'MIDI Thru', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' },
+      { id: 'motu-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' },
+      { id: 'motu-midi-thru', name: 'MIDI Thru', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' },
       
       // Word Clock I/O (BNC)
       { id: 'motu-wc-in', name: 'Word Clock In', direction: 'input', physical: 'BNC', category: 'digital', way: 'socket' },
-      { id: 'motu-wc-out', name: 'Word Clock Out', direction: 'output', physical: 'BNC', category: 'digital', way: 'port' },
-      { id: 'motu-wc-thru', name: 'Word Clock Thru', direction: 'output', physical: 'BNC', category: 'digital', way: 'port' },
+      { id: 'motu-wc-out', name: 'Word Clock Out', direction: 'output', physical: 'BNC', category: 'digital', way: 'plug' },
+      { id: 'motu-wc-thru', name: 'Word Clock Thru', direction: 'output', physical: 'BNC', category: 'digital', way: 'plug' },
       
       // Footswitch input
       { id: 'motu-footswitch', name: 'Footswitch In', direction: 'input', physical: '1/4', category: 'control', way: 'socket' }
@@ -173,10 +173,10 @@ const sampleLibraryItems: LibraryItem[] = [
     productModel: 'Roland JP-8000',
     dimensions: { width: 1.2, height: 0.4 },
     connections: [
-      { id: 'jp8000-audio-l', name: 'Audio Out L', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'port' },
-      { id: 'jp8000-audio-r', name: 'Audio Out R', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'port' },
+      { id: 'jp8000-audio-l', name: 'Audio Out L', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'plug' },
+      { id: 'jp8000-audio-r', name: 'Audio Out R', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'plug' },
       { id: 'jp8000-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
-      { id: 'jp8000-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'port' }
+      { id: 'jp8000-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' }
     ],
     category: 'Synth',
     icon: '/src/assets/library_images/roland_jp8000.jpg'
@@ -192,8 +192,8 @@ const sampleLibraryItems: LibraryItem[] = [
       { id: 'o2r-ch2', name: 'Ch2 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'o2r-ch3', name: 'Ch3 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'o2r-ch4', name: 'Ch4 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'o2r-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
-      { id: 'o2r-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' }
+      { id: 'o2r-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
+      { id: 'o2r-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' }
     ],
     category: 'Mixer',
     icon: '/src/assets/library_images/yamaha_o2r.jpg'
@@ -220,8 +220,8 @@ const sampleLibraryItems: LibraryItem[] = [
     connections: [
       { id: 'scarlett-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'scarlett-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'scarlett-out1', name: 'Line Out 1', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
-      { id: 'scarlett-out2', name: 'Line Out 2', direction: 'output', physical: 'TRS', category: 'balanced', way: 'port' },
+      { id: 'scarlett-out1', name: 'Line Out 1', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
+      { id: 'scarlett-out2', name: 'Line Out 2', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
       { id: 'scarlett-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
       { id: 'scarlett-hp2', name: 'Headphone Out 2', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' }
     ],
@@ -237,8 +237,8 @@ const sampleLibraryItems: LibraryItem[] = [
     connections: [
       { id: 'dbx-in1', name: 'Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
       { id: 'dbx-in2', name: 'Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'dbx-out1', name: 'Output 1', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' },
-      { id: 'dbx-out2', name: 'Output 2', direction: 'output', physical: 'XLR', category: 'balanced', way: 'port' }
+      { id: 'dbx-out1', name: 'Output 1', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
+      { id: 'dbx-out2', name: 'Output 2', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' }
     ],
     category: 'Processor',
     icon: '/src/assets/library_images/dbx_266xs.jpg',
@@ -527,6 +527,20 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       return false
     }
     
+    // Get the connection objects to determine cable end types
+    const fromConnection = fromNode.connections.find(conn => conn.id === fromConnectionId)
+    const toConnection = toNode.connections.find(conn => conn.id === toConnectionId)
+    
+    if (!fromConnection || !toConnection) {
+      get().addLogMessage('error', 'Cannot find connection details')
+      return false
+    }
+    
+    // Cable end is opposite of the device connection way
+    // If device has port (male), cable end is socket (female) and vice versa
+    const fromWay = fromConnection.way === 'plug' ? 'socket' : 'plug'
+    const toWay = toConnection.way === 'plug' ? 'socket' : 'plug'
+    
     const cableName = `${fromNode.name} → ${toNode.name}`
     const cableLength = calculateCableLength(fromNode, toNode)
     
@@ -535,8 +549,10 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       name: cableName,
       fromNodeId,
       fromConnectionId,
+      fromWay,
       toNodeId,
       toConnectionId,
+      toWay,
       length: cableLength
     }
     
