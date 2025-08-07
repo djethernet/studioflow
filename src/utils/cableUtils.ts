@@ -9,6 +9,11 @@ import type { Connection } from '../types/StudioItem'
  * @param toWay - Cable end way for destination (opposite of device connection way)
  * @returns Formatted cable name string
  */
+
+function capitalizeFirstLetter(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 export function formatCableName(
   fromConnection: Connection,
   toConnection: Connection,
@@ -22,7 +27,7 @@ export function formatCableName(
   const formatConnector = (connection: Connection, way: 'plug' | 'socket') => {
     const connectorType = connection.physical
     if (showWayFor.includes(connectorType)) {
-      return `${connectorType} ${way}`
+      return `${connectorType} ${capitalizeFirstLetter(way)}`
     }
     return connectorType
   }
@@ -33,5 +38,5 @@ export function formatCableName(
   // Check if it's a conversion cable (different connector types)
   const isConversion = fromConnection.physical !== toConnection.physical
   
-  return `${fromConnector} to ${toConnector}${isConversion ? ' Conversion' : ''} cable`
+  return `${fromConnector} to ${toConnector}${isConversion ? ' Conversion' : ''} Cable`
 }
