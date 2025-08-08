@@ -262,15 +262,6 @@ export function LibraryPanel() {
                   <Text size="sm" fw={500} style={{ flex: 1 }}>
                     {item.name}
                   </Text>
-                  {item.isOfficial ? (
-                    <Badge variant="outline" color="blue" size="xs">
-                      Official
-                    </Badge>
-                  ) : (
-                    <Badge variant="filled" color="orange" size="xs">
-                      Custom
-                    </Badge>
-                  )}
                   {!item.isOfficial && (
                     <Menu shadow="md" width={120}>
                       <Menu.Target>
