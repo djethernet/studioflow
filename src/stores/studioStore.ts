@@ -3,6 +3,13 @@ import { v4 as uuidv4 } from 'uuid'
 import type { LibraryItem, StudioItem, Viewport, NodeConnection } from '../types/StudioItem'
 import type { LogMessage, LogLevel } from '../components/LogPanel'
 import type { GearFormData } from '../components/AddGearModal'
+import { 
+  loadCombinedGear, 
+  addCustomGear, 
+  updateCustomGear, 
+  deleteCustomGear,
+  type GearQueryOptions
+} from '../services/gearService'
 
 // Utility function to calculate cable length between two studio items
 function calculateCableLength(fromItem: StudioItem, toItem: StudioItem): number {
@@ -19,8 +26,12 @@ function calculateCableLength(fromItem: StudioItem, toItem: StudioItem): number 
 }
 
 type StudioState = {
-  // Library templates (read-only gear definitions)
+  // Library templates (read-only gear definitions) - now loaded from Firebase
   libraryItems: LibraryItem[]
+  libraryLoading: boolean
+  libraryError: string | null
+  libraryHasMore: boolean
+  libraryLastDoc: unknown // QueryDocumentSnapshot - keeping as unknown to avoid Firebase imports in types
   
   // Studio project data (gear instances)
   studioItems: StudioItem[]
@@ -29,6 +40,7 @@ type StudioState = {
   selectedStudioItemId: string | null
   selectedLibraryItem: LibraryItem | null
   searchQuery: string
+  categoryFilter: string
   viewport: Viewport
   
   // Connections view state
@@ -39,11 +51,17 @@ type StudioState = {
   // Log panel state
   logMessages: LogMessage[]
   
-  // Library actions
+  // Library actions (Firebase-backed)
   setSelectedLibraryItem: (item: LibraryItem | null) => void
   setSearchQuery: (query: string) => void
+  setCategoryFilter: (category: string) => void
+  loadGear: (options?: GearQueryOptions) => Promise<void>
+  loadMoreGear: () => Promise<void>
+  refreshGear: () => Promise<void>
+  addLibraryItem: (gearData: GearFormData) => Promise<void>
+  updateLibraryItem: (gearId: string, gearData: Partial<GearFormData>) => Promise<void>
+  deleteLibraryItem: (gearId: string) => Promise<void>
   getFilteredLibraryItems: () => LibraryItem[]
-  addLibraryItem: (gearData: GearFormData) => void
   
   // Studio item actions
   addStudioItem: (libraryItem: LibraryItem, x: number, y: number, onCanvas?: boolean) => string
@@ -91,170 +109,20 @@ type StudioState = {
   resetStudioData: () => void
 }
 
-// Sample library data (templates)
-const sampleLibraryItems: LibraryItem[] = [
-  {
-    id: 1,
-    name: 'Genelec 1031A',
-    productModel: 'Genelec 1031A',
-    dimensions: { width: 0.19, height: 0.28 },
-    connections: [
-      { id: 'genelec-xlr-in', name: 'XLR Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'genelec-trs-in', name: 'TRS Input', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' }
-    ],
-    category: 'Speakers',
-    icon: '/src/assets/library_images/genelec_1031a.jpg'
-    // No rackUnits - this is not rack-mountable
-  },
-  {
-    id: 2,
-    name: 'MOTU 828',
-    productModel: 'MOTU 828',
-    dimensions: { width: 0.48, height: 0.22 },
-    connections: [
-      // Front panel mic/line/hi-Z inputs (2x XLR/TRS combo)
-      { id: 'motu-mic1', name: 'Mic/Line/Hi-Z Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'motu-mic2', name: 'Mic/Line/Hi-Z Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      // Rear panel line inputs (8x TRS)
-      { id: 'motu-line3', name: 'Line Input 3', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line4', name: 'Line Input 4', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line5', name: 'Line Input 5', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line6', name: 'Line Input 6', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line7', name: 'Line Input 7', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line8', name: 'Line Input 8', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line9', name: 'Line Input 9', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      { id: 'motu-line10', name: 'Line Input 10', direction: 'input', physical: 'TRS', category: 'balanced', way: 'socket' },
-      
-      // Main analog outputs (2x XLR)
-      { id: 'motu-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
-      { id: 'motu-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
-      // Line outputs (8x TRS)
-      { id: 'motu-out3', name: 'Line Out 3', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out4', name: 'Line Out 4', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out5', name: 'Line Out 5', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out6', name: 'Line Out 6', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out7', name: 'Line Out 7', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out8', name: 'Line Out 8', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out9', name: 'Line Out 9', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'motu-out10', name: 'Line Out 10', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      
-      // Headphone outputs (2x front panel)
-      { id: 'motu-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
-      { id: 'motu-hp2', name: 'Headphone Out 2', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
-      
-      // Digital I/O - ADAT (16 channels total via 2 optical banks)
-      { id: 'motu-adat-in-a', name: 'ADAT Bank A In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
-      { id: 'motu-adat-in-b', name: 'ADAT Bank B In', direction: 'input', physical: 'Optical', category: 'digital', way: 'socket' },
-      { id: 'motu-adat-out-a', name: 'ADAT Bank A Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'plug' },
-      { id: 'motu-adat-out-b', name: 'ADAT Bank B Out', direction: 'output', physical: 'Optical', category: 'digital', way: 'plug' },
-      
-      // S/PDIF digital (RCA)
-      { id: 'motu-spdif-in', name: 'S/PDIF In', direction: 'input', physical: 'RCA', category: 'digital', way: 'socket' },
-      { id: 'motu-spdif-out', name: 'S/PDIF Out', direction: 'output', physical: 'RCA', category: 'digital', way: 'plug' },
-      
-      // MIDI I/O
-      { id: 'motu-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
-      { id: 'motu-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' },
-      { id: 'motu-midi-thru', name: 'MIDI Thru', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' },
-      
-      // Word Clock I/O (BNC)
-      { id: 'motu-wc-in', name: 'Word Clock In', direction: 'input', physical: 'BNC', category: 'digital', way: 'socket' },
-      { id: 'motu-wc-out', name: 'Word Clock Out', direction: 'output', physical: 'BNC', category: 'digital', way: 'plug' },
-      { id: 'motu-wc-thru', name: 'Word Clock Thru', direction: 'output', physical: 'BNC', category: 'digital', way: 'plug' },
-      
-      // Footswitch input
-      { id: 'motu-footswitch', name: 'Footswitch In', direction: 'input', physical: '1/4', category: 'control', way: 'socket' }
-    ],
-    category: 'Interface',
-    icon: '/src/assets/library_images/motu_828.jpg',
-    rackUnits: 1  // 1U rack-mountable audio interface
-  },
-  {
-    id: 3,
-    name: 'Roland JP-8000',
-    productModel: 'Roland JP-8000',
-    dimensions: { width: 1.2, height: 0.4 },
-    connections: [
-      { id: 'jp8000-audio-l', name: 'Audio Out L', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'plug' },
-      { id: 'jp8000-audio-r', name: 'Audio Out R', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'plug' },
-      { id: 'jp8000-midi-in', name: 'MIDI In', direction: 'input', physical: 'MIDI', category: 'midi', way: 'socket' },
-      { id: 'jp8000-midi-out', name: 'MIDI Out', direction: 'output', physical: 'MIDI', category: 'midi', way: 'plug' }
-    ],
-    category: 'Synth',
-    icon: '/src/assets/library_images/roland_jp8000.jpg'
-    // No rackUnits - desktop synthesizer
-  },
-  {
-    id: 4,
-    name: 'Yamaha O2R',
-    productModel: 'Yamaha O2R',
-    dimensions: { width: 1.8, height: 0.8 },
-    connections: [
-      { id: 'o2r-ch1', name: 'Ch1 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'o2r-ch2', name: 'Ch2 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'o2r-ch3', name: 'Ch3 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'o2r-ch4', name: 'Ch4 Input', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'o2r-main-l', name: 'Main Out L', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
-      { id: 'o2r-main-r', name: 'Main Out R', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' }
-    ],
-    category: 'Mixer',
-    icon: '/src/assets/library_images/yamaha_o2r.jpg'
-    // No rackUnits - large format desk mixer
-  },
-  {
-    id: 5,
-    name: '19" Equipment Rack',
-    productModel: 'Standard 19" Rack 12U',
-    dimensions: { width: 0.6, height: 0.7 }, // Standard 19" rack dimensions in overhead view
-    connections: [
-      { id: 'rack-power-in', name: 'Power Input', direction: 'input', physical: 'XLR', category: 'digital', way: 'socket' }
-    ],
-    category: 'Rack',
-    icon: '/src/assets/library_images/rack_12u.jpg',
-    isRack: true,
-    rackCapacity: 12  // 12U rack
-  },
-  {
-    id: 6,
-    name: 'Focusrite Scarlett 18i20',
-    productModel: 'Focusrite Scarlett 18i20',
-    dimensions: { width: 0.48, height: 0.25 }, // Overhead view dimensions
-    connections: [
-      { id: 'scarlett-mic1', name: 'Mic Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'scarlett-mic2', name: 'Mic Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'scarlett-out1', name: 'Line Out 1', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'scarlett-out2', name: 'Line Out 2', direction: 'output', physical: 'TRS', category: 'balanced', way: 'plug' },
-      { id: 'scarlett-hp1', name: 'Headphone Out 1', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' },
-      { id: 'scarlett-hp2', name: 'Headphone Out 2', direction: 'output', physical: '1/4', category: 'unbalanced', way: 'socket' }
-    ],
-    category: 'Interface',
-    icon: '/src/assets/library_images/focusrite_scarlett.jpg',
-    rackUnits: 1
-  },
-  {
-    id: 7,
-    name: 'DBX 266xs Compressor',
-    productModel: 'DBX 266xs',
-    dimensions: { width: 0.48, height: 0.25 }, // Overhead view dimensions  
-    connections: [
-      { id: 'dbx-in1', name: 'Input 1', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'dbx-in2', name: 'Input 2', direction: 'input', physical: 'XLR', category: 'balanced', way: 'socket' },
-      { id: 'dbx-out1', name: 'Output 1', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' },
-      { id: 'dbx-out2', name: 'Output 2', direction: 'output', physical: 'XLR', category: 'balanced', way: 'plug' }
-    ],
-    category: 'Processor',
-    icon: '/src/assets/library_images/dbx_266xs.jpg',
-    rackUnits: 1
-  }
-]
+// Store will be initialized with empty library items - gear is now loaded from Firebase
 
 export const useStudioStore = create<StudioState>((set, get) => ({
   // Initial state
-  libraryItems: sampleLibraryItems,
+  libraryItems: [],
+  libraryLoading: false,
+  libraryError: null,
+  libraryHasMore: true,
+  libraryLastDoc: null,
   studioItems: [],
   selectedStudioItemId: null,
   selectedLibraryItem: null,
   searchQuery: '',
+  categoryFilter: '',
   viewport: {
     offsetX: 0,
     offsetY: 0,
@@ -269,47 +137,160 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   nodeConnections: [],
   logMessages: [],
   
-  // Library actions
+  // Library actions (Firebase-backed)
   setSelectedLibraryItem: (item) => set({ selectedLibraryItem: item }),
   
   setSearchQuery: (query) => set({ searchQuery: query }),
   
-  getFilteredLibraryItems: () => {
-    const { libraryItems, searchQuery } = get()
-    if (!searchQuery) return libraryItems
-    
-    return libraryItems.filter(item => 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+  setCategoryFilter: (category) => set({ categoryFilter: category }),
+
+  loadGear: async (options = {}) => {
+    try {
+      set({ libraryLoading: true, libraryError: null })
+      
+      const { searchQuery, categoryFilter } = get()
+      const queryOptions: GearQueryOptions = {
+        ...options,
+        searchQuery: searchQuery || options.searchQuery,
+        category: categoryFilter || options.category
+      }
+
+      const result = await loadCombinedGear(queryOptions)
+      
+      set({
+        libraryItems: result.items,
+        libraryHasMore: result.hasMore,
+        libraryLastDoc: result.lastDoc,
+        libraryLoading: false
+      })
+    } catch (error) {
+      console.error('Failed to load gear:', error)
+      set({ 
+        libraryLoading: false, 
+        libraryError: error instanceof Error ? error.message : 'Failed to load gear'
+      })
+      get().addLogMessage('error', 'Failed to load gear library')
+    }
   },
 
-  addLibraryItem: (gearData: GearFormData) => {
-    const { libraryItems } = get()
+  loadMoreGear: async () => {
+    const { libraryHasMore, libraryLastDoc, libraryLoading, searchQuery, categoryFilter } = get()
     
-    // Generate next ID (max current ID + 1)
-    const maxId = Math.max(...libraryItems.map(item => item.id), 0)
+    if (!libraryHasMore || libraryLoading) return
+
+    try {
+      set({ libraryLoading: true })
+      
+      const result = await loadCombinedGear({
+        searchQuery,
+        category: categoryFilter,
+        lastDoc: libraryLastDoc
+      })
+      
+      set((state) => ({
+        libraryItems: [...state.libraryItems, ...result.items],
+        libraryHasMore: result.hasMore,
+        libraryLastDoc: result.lastDoc,
+        libraryLoading: false
+      }))
+    } catch (error) {
+      console.error('Failed to load more gear:', error)
+      set({ 
+        libraryLoading: false, 
+        libraryError: error instanceof Error ? error.message : 'Failed to load more gear'
+      })
+    }
+  },
+
+  refreshGear: async () => {
+    set({ 
+      libraryItems: [], 
+      libraryLastDoc: null, 
+      libraryHasMore: true 
+    })
+    await get().loadGear()
+  },
+
+  addLibraryItem: async (gearData: GearFormData) => {
+    try {
+      set({ libraryLoading: true })
+      
+      await addCustomGear(gearData)
+      
+      // Refresh the gear library to include the new item
+      await get().refreshGear()
+      
+      get().addLogMessage('success', `Custom gear "${gearData.name}" added to library`)
+    } catch (error) {
+      console.error('Failed to add custom gear:', error)
+      set({ libraryLoading: false })
+      get().addLogMessage('error', 'Failed to add custom gear')
+      throw error
+    }
+  },
+
+  updateLibraryItem: async (gearId: string, gearData: Partial<GearFormData>) => {
+    try {
+      await updateCustomGear(gearId, gearData)
+      
+      // Update the item in local state
+      set((state) => ({
+        libraryItems: state.libraryItems.map(item => 
+          item.id === gearId ? { 
+            ...item, 
+            ...gearData,
+            dimensions: gearData.width && gearData.height ? 
+              { width: gearData.width, height: gearData.height } : item.dimensions,
+            updatedAt: new Date()
+          } : item
+        )
+      }))
+      
+      get().addLogMessage('success', 'Gear updated successfully')
+    } catch (error) {
+      console.error('Failed to update gear:', error)
+      get().addLogMessage('error', 'Failed to update gear')
+      throw error
+    }
+  },
+
+  deleteLibraryItem: async (gearId: string) => {
+    try {
+      await deleteCustomGear(gearId)
+      
+      // Remove from local state
+      set((state) => ({
+        libraryItems: state.libraryItems.filter(item => item.id !== gearId)
+      }))
+      
+      get().addLogMessage('success', 'Custom gear deleted')
+    } catch (error) {
+      console.error('Failed to delete gear:', error)
+      get().addLogMessage('error', 'Failed to delete gear')
+      throw error
+    }
+  },
+  
+  getFilteredLibraryItems: () => {
+    const { libraryItems, searchQuery, categoryFilter } = get()
     
-    const newLibraryItem: LibraryItem = {
-      id: maxId + 1,
-      name: gearData.name,
-      productModel: gearData.productModel,
-      dimensions: {
-        width: gearData.width,
-        height: gearData.height
-      },
-      connections: gearData.connections,
-      category: gearData.category,
-      rackUnits: gearData.rackUnits,
-      isRack: gearData.isRack,
-      rackCapacity: gearData.isRack ? gearData.rackCapacity : undefined
+    let filtered = libraryItems
+    
+    if (categoryFilter) {
+      filtered = filtered.filter(item => item.category === categoryFilter)
     }
     
-    set((state) => ({
-      libraryItems: [...state.libraryItems, newLibraryItem]
-    }))
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        item.productModel.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query) ||
+        item.tags?.some(tag => tag.toLowerCase().includes(query))
+      )
+    }
     
-    get().addLogMessage('success', `Custom gear "${gearData.name}" added to library`)
+    return filtered
   },
   
   // Studio item actions

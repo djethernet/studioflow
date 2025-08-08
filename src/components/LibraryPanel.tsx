@@ -1,24 +1,65 @@
-import { useState } from 'react'
-import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group, Loader, Alert, Select, Badge } from '@mantine/core'
+import { IconPlus, IconRefresh, IconAlertCircle } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
 import { AddGearModal, type GearFormData } from './AddGearModal'
 import type { LibraryItem } from '../types/StudioItem'
 
+const CATEGORIES = [
+  'All Categories',
+  'Interface',
+  'Mixer', 
+  'Speakers',
+  'Synth',
+  'Processor',
+  'Rack',
+  'Other'
+]
+
 export function LibraryPanel() {
   const { 
     selectedLibraryItem, 
     searchQuery, 
+    categoryFilter,
+    libraryItems,
+    libraryLoading,
+    libraryError,
+    libraryHasMore,
     setSelectedLibraryItem, 
-    setSearchQuery, 
-    getFilteredLibraryItems,
-    addLibraryItem
+    setSearchQuery,
+    setCategoryFilter,
+    loadGear,
+    loadMoreGear,
+    refreshGear,
+    addLibraryItem,
+    getFilteredLibraryItems
   } = useStudioStore()
   
   const [splitHeight, setSplitHeight] = useState(60) // Percentage for gear list
   const [addModalOpened, setAddModalOpened] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const filteredItems = getFilteredLibraryItems()
+
+  // Load gear on component mount
+  useEffect(() => {
+    if (libraryItems.length === 0 && !libraryLoading) {
+      loadGear()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Reload when search or category changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery || categoryFilter) {
+        loadGear()
+      }
+    }, 300) // Debounce search
+
+    return () => clearTimeout(timeoutId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, categoryFilter])
 
   const handleItemClick = (item: LibraryItem) => {
     setSelectedLibraryItem(item)
@@ -29,10 +70,45 @@ export function LibraryPanel() {
     e.dataTransfer.effectAllowed = 'copy'
   }
 
-  const handleAddGear = (gearData: GearFormData) => {
-    addLibraryItem(gearData)
-    setAddModalOpened(false)
+  const handleAddGear = async (gearData: GearFormData) => {
+    try {
+      await addLibraryItem(gearData)
+      setAddModalOpened(false)
+    } catch (error) {
+      // Error is already handled in the store and logged
+      console.error('Failed to add gear:', error)
+    }
   }
+
+  const handleCategoryChange = (category: string | null) => {
+    setCategoryFilter(category === 'All Categories' ? '' : category || '')
+  }
+
+  const handleRefresh = () => {
+    refreshGear()
+  }
+
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMore || !libraryHasMore) return
+    
+    setIsLoadingMore(true)
+    try {
+      await loadMoreGear()
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [isLoadingMore, libraryHasMore, loadMoreGear])
+
+  // Handle scroll for infinite loading
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget
+    const { scrollTop, scrollHeight, clientHeight } = element
+    
+    // Load more when scrolled to bottom (with 100px threshold)
+    if (scrollHeight - scrollTop - clientHeight < 100 && libraryHasMore && !libraryLoading && !isLoadingMore) {
+      handleLoadMore()
+    }
+  }, [handleLoadMore, libraryHasMore, libraryLoading, isLoadingMore])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const startY = e.clientY
@@ -70,24 +146,68 @@ export function LibraryPanel() {
       >
         <Box mb="sm">
           <Group justify="space-between" mb="sm">
-            <Text fw={700} size="lg">Catalog</Text>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              size="xs"
-              onClick={() => setAddModalOpened(true)}
-            >
-              Add Gear
-            </Button>
+            <Group>
+              <Text fw={700} size="lg">Catalog</Text>
+              <Badge size="sm" color="blue">{filteredItems.length}</Badge>
+            </Group>
+            <Group gap="xs">
+              <Button
+                leftSection={<IconRefresh size={14} />}
+                size="xs"
+                variant="light"
+                onClick={handleRefresh}
+                loading={libraryLoading}
+              >
+                Refresh
+              </Button>
+              <Button
+                leftSection={<IconPlus size={16} />}
+                size="xs"
+                onClick={() => setAddModalOpened(true)}
+              >
+                Add Gear
+              </Button>
+            </Group>
           </Group>
-          <TextInput
-            placeholder="Search gear..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          
+          <Stack gap="xs">
+            <TextInput
+              placeholder="Search gear..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Select
+              placeholder="Filter by category"
+              data={CATEGORIES}
+              value={categoryFilter || 'All Categories'}
+              onChange={handleCategoryChange}
+            />
+          </Stack>
         </Box>
         
-        <ScrollArea style={{ flex: 1 }}>
+        {libraryError && (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            color="red" 
+            mb="sm"
+            variant="light"
+          >
+            {libraryError}
+          </Alert>
+        )}
+        
+        <ScrollArea 
+          style={{ flex: 1 }} 
+          onScrollCapture={handleScroll}
+        >
           <Stack gap="xs">
+            {libraryLoading && filteredItems.length === 0 && (
+              <Group justify="center" py="xl">
+                <Loader size="sm" />
+                <Text size="sm" c="dimmed">Loading gear...</Text>
+              </Group>
+            )}
+            
             {filteredItems.map((item) => (
               <Paper
                 key={item.id}
@@ -98,9 +218,36 @@ export function LibraryPanel() {
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
               >
-                <Text size="sm" fw={500}>{item.name}</Text>
+                <Group justify="space-between">
+                  <Text size="sm" fw={500}>{item.name}</Text>
+                  {!item.isOfficial && (
+                    <Badge size="xs" color="green">Custom</Badge>
+                  )}
+                </Group>
+                {item.category && (
+                  <Text size="xs" c="dimmed">{item.category}</Text>
+                )}
               </Paper>
             ))}
+            
+            {isLoadingMore && (
+              <Group justify="center" py="sm">
+                <Loader size="sm" />
+                <Text size="xs" c="dimmed">Loading more...</Text>
+              </Group>
+            )}
+            
+            {!libraryHasMore && filteredItems.length > 0 && (
+              <Text size="xs" c="dimmed" ta="center" py="sm">
+                All gear loaded
+              </Text>
+            )}
+            
+            {!libraryLoading && filteredItems.length === 0 && !libraryError && (
+              <Text size="sm" c="dimmed" ta="center" py="xl">
+                {searchQuery || categoryFilter ? 'No gear matches your filters' : 'No gear available'}
+              </Text>
+            )}
           </Stack>
         </ScrollArea>
       </Paper>
