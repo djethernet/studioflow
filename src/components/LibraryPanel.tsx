@@ -258,62 +258,72 @@ export function LibraryPanel() {
               <Paper
                 key={item.id}
                 p="sm"
-                bg={selectedLibraryItem?.id === item.id ? 'blue.1' : 'gray.0'}
-                style={{ cursor: 'grab' }}
+                withBorder
+                style={{
+                  cursor: 'grab',
+                  backgroundColor: selectedLibraryItem?.id === item.id ? '#f0f8ff' : '#fafafa',
+                  borderColor: selectedLibraryItem?.id === item.id ? '#4a90e2' : '#e0e0e0',
+                  borderStyle: 'dashed',
+                  borderWidth: '2px'
+                }}
                 onClick={() => handleItemClick(item)}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
               >
-                <Group justify="space-between">
-                  <Box style={{ flex: 1 }}>
-                    <Group justify="space-between">
-                      <Text size="sm" fw={500}>{item.name}</Text>
-                      <Group gap="xs">
-                        {!item.isOfficial && (
-                          <Badge size="xs" color="green">Custom</Badge>
-                        )}
-                        {!item.isOfficial && (
-                          <Menu shadow="md" width={120}>
-                            <Menu.Target>
-                              <ActionIcon
-                                size="sm"
-                                variant="subtle"
-                                onClick={(e) => {
-                                  e.stopPropagation() // Prevent item selection
-                                }}
-                              >
-                                <IconDots size={14} />
-                              </ActionIcon>
-                            </Menu.Target>
-                            <Menu.Dropdown>
-                              <Menu.Item
-                                leftSection={<IconEdit size={14} />}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  openEditModal(item)
-                                }}
-                              >
-                                Edit
-                              </Menu.Item>
-                              <Menu.Item
-                                leftSection={<IconTrash size={14} />}
-                                color="red"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  openDeleteModal(item)
-                                }}
-                              >
-                                Delete
-                              </Menu.Item>
-                            </Menu.Dropdown>
-                          </Menu>
-                        )}
-                      </Group>
-                    </Group>
-                    {item.category && (
-                      <Text size="xs" c="dimmed">{item.category}</Text>
-                    )}
-                  </Box>
+                <Group gap="sm">
+                  <Badge variant="light" color="teal" size="xs">
+                    {item.category || 'Equipment'}
+                  </Badge>
+                  <Text size="sm" fw={500} style={{ flex: 1 }}>
+                    {item.name}
+                  </Text>
+                  {item.isOfficial ? (
+                    <Badge variant="outline" color="blue" size="xs">
+                      Official
+                    </Badge>
+                  ) : (
+                    <Badge variant="filled" color="orange" size="xs">
+                      Custom
+                    </Badge>
+                  )}
+                  {!item.isOfficial && (
+                    <Menu shadow="md" width={120}>
+                      <Menu.Target>
+                        <ActionIcon
+                          size="sm"
+                          variant="light"
+                          color="gray"
+                          onClick={(e) => {
+                            e.stopPropagation() // Prevent item selection
+                          }}
+                          title="Edit options"
+                        >
+                          <IconDots size={16} />
+                        </ActionIcon>
+                      </Menu.Target>
+                      <Menu.Dropdown>
+                        <Menu.Item
+                          leftSection={<IconEdit size={14} />}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openEditModal(item)
+                          }}
+                        >
+                          Edit
+                        </Menu.Item>
+                        <Menu.Item
+                          leftSection={<IconTrash size={14} />}
+                          color="red"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openDeleteModal(item)
+                          }}
+                        >
+                          Delete
+                        </Menu.Item>
+                      </Menu.Dropdown>
+                    </Menu>
+                  )}
                 </Group>
               </Paper>
             ))}
