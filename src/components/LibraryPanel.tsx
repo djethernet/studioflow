@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group, Loader, Alert, Select, Badge, ActionIcon, Menu, Modal } from '@mantine/core'
-import { IconPlus, IconRefresh, IconAlertCircle, IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
+import { IconPlus, IconAlertCircle, IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
 import { AddGearModal, type GearFormData } from './AddGearModal'
@@ -31,7 +31,6 @@ export function LibraryPanel() {
     setCategoryFilter,
     loadGear,
     loadMoreGear,
-    refreshGear,
     addLibraryItem,
     updateLibraryItem,
     deleteLibraryItem,
@@ -130,9 +129,6 @@ export function LibraryPanel() {
     setCategoryFilter(category === 'All Categories' ? '' : category || '')
   }
 
-  const handleRefresh = () => {
-    refreshGear()
-  }
 
   const handleLoadMore = useCallback(async () => {
     if (isLoadingMore || !libraryHasMore) return
@@ -196,24 +192,13 @@ export function LibraryPanel() {
               <Text fw={700} size="lg">Catalog</Text>
               <Badge size="sm" color="blue">{filteredItems.length}</Badge>
             </Group>
-            <Group gap="xs">
-              <Button
-                leftSection={<IconRefresh size={14} />}
-                size="xs"
-                variant="light"
-                onClick={handleRefresh}
-                loading={libraryLoading}
-              >
-                Refresh
-              </Button>
-              <Button
-                leftSection={<IconPlus size={16} />}
-                size="xs"
-                onClick={() => setAddModalOpened(true)}
-              >
-                Add Gear
-              </Button>
-            </Group>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              size="xs"
+              onClick={() => setAddModalOpened(true)}
+            >
+              Add Gear
+            </Button>
           </Group>
           
           <Stack gap="xs">
