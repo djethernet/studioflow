@@ -24,6 +24,7 @@ export function LibraryPanel() {
     selectedLibraryItem, 
     searchQuery, 
     categoryFilter,
+    adminMode,
     libraryItems,
     libraryLoading,
     libraryError,
@@ -261,7 +262,7 @@ export function LibraryPanel() {
                   <Badge variant="light" color="teal" size="xs">
                     {item.category || 'Equipment'}
                   </Badge>
-                  {isAdmin && !item.isOfficial && (
+                  {adminMode && !item.isOfficial && (
                     <Badge variant="filled" color="orange" size="xs">
                       CUSTOM
                     </Badge>
@@ -363,7 +364,7 @@ export function LibraryPanel() {
         onSubmit={handleAddGear}
         editingGear={editingGear || undefined}
         onUpdate={handleEditGear}
-        isAdmin={isAdmin}
+        isAdmin={adminMode}
       />
 
       <Modal

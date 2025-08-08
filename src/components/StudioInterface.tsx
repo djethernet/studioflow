@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tabs, Button, Group, Text, LoadingOverlay, Alert, Badge } from '@mantine/core'
+import { Tabs, Button, Group, Text, LoadingOverlay, Alert, Badge, Switch } from '@mantine/core'
 import { IconArrowLeft, IconAlertCircle, IconCheck } from '@tabler/icons-react'
 import { LibraryPanel } from './LibraryPanel'
 import { Canvas } from './Canvas'
@@ -18,7 +18,7 @@ export const StudioInterface = () => {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const { currentUser, isAdmin } = useAuth()
-  const { exportStudioData, importStudioData, resetStudioData } = useStudioStore()
+  const { exportStudioData, importStudioData, resetStudioData, adminMode, setAdminMode } = useStudioStore()
   const [activeTab, setActiveTab] = useState<string | null>('layout')
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
@@ -131,12 +131,22 @@ export const StudioInterface = () => {
             >
               Projects
             </Button>
-            <Group gap="xs">
+            <Group gap="md">
               <Text fw={500} size="lg">{project.name}</Text>
               {isAdmin && (
-                <Badge size="sm" color="red" variant="filled">
-                  ADMIN
-                </Badge>
+                <Group gap="xs">
+                  <Switch
+                    size="sm"
+                    label="Admin Mode"
+                    checked={adminMode}
+                    onChange={(event) => setAdminMode(event.currentTarget.checked)}
+                  />
+                  {adminMode && (
+                    <Badge size="sm" color="red" variant="filled">
+                      ADMIN MODE
+                    </Badge>
+                  )}
+                </Group>
               )}
             </Group>
           </Group>

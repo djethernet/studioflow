@@ -48,6 +48,7 @@ type StudioState = {
   searchQuery: string
   categoryFilter: string
   viewport: Viewport
+  adminMode: boolean
   
   // Connections view state
   connectionsViewport: Viewport
@@ -61,6 +62,7 @@ type StudioState = {
   setSelectedLibraryItem: (item: LibraryItem | null) => void
   setSearchQuery: (query: string) => void
   setCategoryFilter: (category: string) => void
+  setAdminMode: (adminMode: boolean) => void
   loadGear: (options?: GearQueryOptions) => Promise<void>
   loadMoreGear: () => Promise<void>
   refreshGear: () => Promise<void>
@@ -130,6 +132,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   selectedLibraryItem: null,
   searchQuery: '',
   categoryFilter: '',
+  adminMode: false,
   viewport: {
     offsetX: 0,
     offsetY: 0,
@@ -150,6 +153,8 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
   
   setCategoryFilter: (category) => set({ categoryFilter: category }),
+  
+  setAdminMode: (adminMode) => set({ adminMode }),
 
   loadGear: async (options = {}) => {
     try {
@@ -222,10 +227,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     try {
       set({ libraryLoading: true })
       
-      // Check if user is admin via Firebase custom claims
+      // Check if user is admin and in admin mode
+      const { adminMode } = get()
       const user = auth.currentUser
       let isAdmin = false
-      if (user) {
+      if (user && adminMode) {
         try {
           const idTokenResult = await user.getIdTokenResult()
           isAdmin = !!idTokenResult.claims.admin
@@ -234,13 +240,14 @@ export const useStudioStore = create<StudioState>((set, get) => ({
         }
       }
       
-      // Add to global collection if admin, user collection otherwise
-      await addCustomGear(gearData, isAdmin)
+      // Add to global collection only if user is admin AND in admin mode
+      const addToGlobal = adminMode && isAdmin
+      await addCustomGear(gearData, addToGlobal)
       
       // Refresh the gear library to include the new item
       await get().refreshGear()
       
-      const targetCollection = isAdmin ? 'global library' : 'library'
+      const targetCollection = addToGlobal ? 'global library' : 'library'
       get().addLogMessage('success', `Custom gear "${gearData.name}" added to ${targetCollection}`)
     } catch (error) {
       console.error('Failed to add gear:', error)
@@ -256,10 +263,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       const item = get().libraryItems.find(item => item.id === gearId)
       const isGlobalItem = item?.isOfficial
       
-      // Check if user is admin for global items
+      // Check if user is admin and in admin mode for global items
+      const { adminMode } = get()
       const user = auth.currentUser
       let isAdmin = false
-      if (user && isGlobalItem) {
+      if (user && isGlobalItem && adminMode) {
         try {
           const idTokenResult = await user.getIdTokenResult()
           isAdmin = !!idTokenResult.claims.admin
@@ -305,10 +313,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       const item = get().libraryItems.find(item => item.id === gearId)
       const isGlobalItem = item?.isOfficial
       
-      // Check if user is admin for global items
+      // Check if user is admin and in admin mode for global items
+      const { adminMode } = get()
       const user = auth.currentUser
       let isAdmin = false
-      if (user && isGlobalItem) {
+      if (user && isGlobalItem && adminMode) {
         try {
           const idTokenResult = await user.getIdTokenResult()
           isAdmin = !!idTokenResult.claims.admin
