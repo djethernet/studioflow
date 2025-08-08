@@ -211,8 +211,8 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
             placeholder="0.5"
             min={0.1}
             max={5.0}
-            step={0.1}
-            decimalScale={1}
+            step={0.01}
+            decimalScale={2}
             required
             value={formData.width}
             onChange={(value) => setFormData(prev => ({ ...prev, width: (value as number) || 0.5 }))}
@@ -222,8 +222,8 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
             placeholder="0.3"
             min={0.1}
             max={5.0}
-            step={0.1}
-            decimalScale={1}
+            step={0.01}
+            decimalScale={2}
             required
             value={formData.height}
             onChange={(value) => setFormData(prev => ({ ...prev, height: (value as number) || 0.3 }))}
