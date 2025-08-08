@@ -270,7 +270,7 @@ export function LibraryPanel() {
                   <Text size="sm" fw={500} style={{ flex: 1 }}>
                     {item.name}
                   </Text>
-                  {(!item.isOfficial || isAdmin) && (
+                  {(!item.isOfficial || adminMode) && (
                     <Menu shadow="md" width={120}>
                       <Menu.Target>
                         <ActionIcon
