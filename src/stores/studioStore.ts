@@ -11,6 +11,9 @@ import {
   type GearQueryOptions
 } from '../services/gearService'
 
+// Default zoom level for canvas (pixels per meter)
+const DEFAULT_CANVAS_ZOOM = 200
+
 // Utility function to calculate cable length between two studio items
 function calculateCableLength(fromItem: StudioItem, toItem: StudioItem): number {
   const dx = toItem.position.x - fromItem.position.x
@@ -91,6 +94,7 @@ type StudioState = {
   
   // Viewport actions
   updateViewport: (viewport: Partial<Viewport>) => void
+  resetViewport: () => void
   
   // Log panel actions
   addLogMessage: (level: LogLevel, message: string) => void
@@ -126,7 +130,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   viewport: {
     offsetX: 0,
     offsetY: 0,
-    zoom: 50 // Default zoom: 50 pixels per meter
+    zoom: DEFAULT_CANVAS_ZOOM
   },
   connectionsViewport: {
     offsetX: 200, // Center the view to show nodes at origin
@@ -184,7 +188,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       const result = await loadCombinedGear({
         searchQuery,
         category: categoryFilter,
-        lastDoc: libraryLastDoc
+        lastDoc: libraryLastDoc as any
       })
       
       set((state) => ({
@@ -439,6 +443,11 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   updateViewport: (newViewport) => set((state) => ({
     viewport: { ...state.viewport, ...newViewport }
   })),
+
+  // Reset viewport to default values
+  resetViewport: () => set({
+    viewport: { offsetX: 0, offsetY: 0, zoom: DEFAULT_CANVAS_ZOOM }
+  }),
   
   // Log panel actions
   addLogMessage: (level, message) => set((state) => {
@@ -781,7 +790,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set({
       studioItems: (studioData.studioItems as StudioItem[]) || [],
       nodeConnections: (studioData.nodeConnections as NodeConnection[]) || [],
-      viewport: (studioData.viewport as Viewport) || { offsetX: 0, offsetY: 0, zoom: 50 },
+      viewport: (studioData.viewport as Viewport) || { offsetX: 0, offsetY: 0, zoom: DEFAULT_CANVAS_ZOOM },
       connectionsViewport: (studioData.connectionsViewport as Viewport) || { offsetX: 200, offsetY: 150, zoom: 80 },
       nodePositions: studioData.nodePositions ? new Map(Object.entries(studioData.nodePositions as Record<string, { x: number, y: number }>)) : new Map(), // Convert object back to Map
       selectedStudioItemId: null, // Reset selection
@@ -796,12 +805,10 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       studioItems: [],
       nodeConnections: [],
       selectedStudioItemId: null,
-      viewport: { offsetX: 0, offsetY: 0, zoom: 50 },
+      viewport: { offsetX: 0, offsetY: 0, zoom: DEFAULT_CANVAS_ZOOM },
       connectionsViewport: { offsetX: 200, offsetY: 150, zoom: 80 },
       nodePositions: new Map(),
       logMessages: []
     })
-    
-    console.log('Studio data reset')
   }
 }))
