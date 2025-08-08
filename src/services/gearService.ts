@@ -87,21 +87,33 @@ function firestoreToLibraryItem(doc: QueryDocumentSnapshot): LibraryItem {
 
 // Convert LibraryItem to Firestore data
 function libraryItemToFirestore(item: Omit<LibraryItem, 'id'>) {
-  return {
+  const firestoreData: Record<string, unknown> = {
     name: item.name,
     productModel: item.productModel,
     dimensions: item.dimensions,
     connections: item.connections,
     category: item.category,
-    icon: item.icon,
-    rackUnits: item.rackUnits,
-    isRack: item.isRack,
-    rackCapacity: item.rackCapacity,
     isOfficial: item.isOfficial || false,
     createdAt: item.createdAt ? Timestamp.fromDate(item.createdAt) : Timestamp.now(),
     updatedAt: Timestamp.now(),
     tags: item.tags || []
   }
+
+  // Only include optional fields if they have values (not undefined)
+  if (item.icon !== undefined) {
+    firestoreData.icon = item.icon
+  }
+  if (item.rackUnits !== undefined) {
+    firestoreData.rackUnits = item.rackUnits
+  }
+  if (item.isRack !== undefined) {
+    firestoreData.isRack = item.isRack
+  }
+  if (item.rackCapacity !== undefined) {
+    firestoreData.rackCapacity = item.rackCapacity
+  }
+
+  return firestoreData
 }
 
 /**

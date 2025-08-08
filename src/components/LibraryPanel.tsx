@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group, Loader, Alert, Select, Badge } from '@mantine/core'
-import { IconPlus, IconRefresh, IconAlertCircle } from '@tabler/icons-react'
+import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group, Loader, Alert, Select, Badge, ActionIcon, Menu, Modal } from '@mantine/core'
+import { IconPlus, IconRefresh, IconAlertCircle, IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
 import { AddGearModal, type GearFormData } from './AddGearModal'
@@ -33,12 +33,17 @@ export function LibraryPanel() {
     loadMoreGear,
     refreshGear,
     addLibraryItem,
+    updateLibraryItem,
+    deleteLibraryItem,
     getFilteredLibraryItems
   } = useStudioStore()
   
   const [splitHeight, setSplitHeight] = useState(60) // Percentage for gear list
   const [addModalOpened, setAddModalOpened] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [editingGear, setEditingGear] = useState<LibraryItem | null>(null)
+  const [deleteModalOpened, setDeleteModalOpened] = useState(false)
+  const [gearToDelete, setGearToDelete] = useState<LibraryItem | null>(null)
   const filteredItems = getFilteredLibraryItems()
 
   // Load gear on component mount
@@ -78,6 +83,47 @@ export function LibraryPanel() {
       // Error is already handled in the store and logged
       console.error('Failed to add gear:', error)
     }
+  }
+
+  const handleEditGear = async (gearId: string, gearData: Partial<GearFormData>) => {
+    try {
+      await updateLibraryItem(gearId, gearData)
+      setEditingGear(null)
+      setAddModalOpened(false)
+    } catch (error) {
+      console.error('Failed to update gear:', error)
+    }
+  }
+
+  const handleDeleteGear = async () => {
+    if (!gearToDelete) return
+    
+    try {
+      await deleteLibraryItem(gearToDelete.id)
+      setDeleteModalOpened(false)
+      setGearToDelete(null)
+      // Clear selection if deleted item was selected
+      if (selectedLibraryItem?.id === gearToDelete.id) {
+        setSelectedLibraryItem(null)
+      }
+    } catch (error) {
+      console.error('Failed to delete gear:', error)
+    }
+  }
+
+  const openEditModal = (gear: LibraryItem) => {
+    setEditingGear(gear)
+    setAddModalOpened(true)
+  }
+
+  const openDeleteModal = (gear: LibraryItem) => {
+    setGearToDelete(gear)
+    setDeleteModalOpened(true)
+  }
+
+  const closeAddModal = () => {
+    setAddModalOpened(false)
+    setEditingGear(null)
   }
 
   const handleCategoryChange = (category: string | null) => {
@@ -219,14 +265,56 @@ export function LibraryPanel() {
                 onDragStart={(e) => handleDragStart(e, item)}
               >
                 <Group justify="space-between">
-                  <Text size="sm" fw={500}>{item.name}</Text>
-                  {!item.isOfficial && (
-                    <Badge size="xs" color="green">Custom</Badge>
-                  )}
+                  <Box style={{ flex: 1 }}>
+                    <Group justify="space-between">
+                      <Text size="sm" fw={500}>{item.name}</Text>
+                      <Group gap="xs">
+                        {!item.isOfficial && (
+                          <Badge size="xs" color="green">Custom</Badge>
+                        )}
+                        {!item.isOfficial && (
+                          <Menu shadow="md" width={120}>
+                            <Menu.Target>
+                              <ActionIcon
+                                size="sm"
+                                variant="subtle"
+                                onClick={(e) => {
+                                  e.stopPropagation() // Prevent item selection
+                                }}
+                              >
+                                <IconDots size={14} />
+                              </ActionIcon>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                              <Menu.Item
+                                leftSection={<IconEdit size={14} />}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openEditModal(item)
+                                }}
+                              >
+                                Edit
+                              </Menu.Item>
+                              <Menu.Item
+                                leftSection={<IconTrash size={14} />}
+                                color="red"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openDeleteModal(item)
+                                }}
+                              >
+                                Delete
+                              </Menu.Item>
+                            </Menu.Dropdown>
+                          </Menu>
+                        )}
+                      </Group>
+                    </Group>
+                    {item.category && (
+                      <Text size="xs" c="dimmed">{item.category}</Text>
+                    )}
+                  </Box>
                 </Group>
-                {item.category && (
-                  <Text size="xs" c="dimmed">{item.category}</Text>
-                )}
               </Paper>
             ))}
             
@@ -283,9 +371,41 @@ export function LibraryPanel() {
 
       <AddGearModal
         opened={addModalOpened}
-        onClose={() => setAddModalOpened(false)}
+        onClose={closeAddModal}
         onSubmit={handleAddGear}
+        editingGear={editingGear || undefined}
+        onUpdate={handleEditGear}
       />
+
+      <Modal
+        opened={deleteModalOpened}
+        onClose={() => {
+          setDeleteModalOpened(false)
+          setGearToDelete(null)
+        }}
+        title="Delete Custom Gear"
+        centered
+      >
+        <Stack gap="md">
+          <Text>
+            Are you sure you want to delete "{gearToDelete?.name}"? This action cannot be undone.
+          </Text>
+          <Group justify="flex-end">
+            <Button
+              variant="light"
+              onClick={() => {
+                setDeleteModalOpened(false)
+                setGearToDelete(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDeleteGear}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </div>
   )
 }

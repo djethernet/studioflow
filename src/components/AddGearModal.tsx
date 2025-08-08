@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Modal, TextInput, NumberInput, Select, Checkbox, Button, Stack, Group, Divider, Text, Paper, ActionIcon, Box } from '@mantine/core'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
-import type { Connection } from '../types/StudioItem'
+import type { Connection, LibraryItem } from '../types/StudioItem'
 
 interface AddGearModalProps {
   opened: boolean
   onClose: () => void
   onSubmit: (gearData: GearFormData) => void
+  editingGear?: LibraryItem
+  onUpdate?: (gearId: string, gearData: Partial<GearFormData>) => void
 }
 
 export interface GearFormData {
@@ -51,7 +53,8 @@ const CONNECTION_CATEGORIES = [
   'control'
 ]
 
-export function AddGearModal({ opened, onClose, onSubmit }: AddGearModalProps) {
+export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate }: AddGearModalProps) {
+  const isEditMode = Boolean(editingGear)
   const [formData, setFormData] = useState<GearFormData>({
     name: '',
     productModel: '',
@@ -64,6 +67,36 @@ export function AddGearModal({ opened, onClose, onSubmit }: AddGearModalProps) {
     connections: []
   })
 
+  // Initialize form with editing gear data
+  useEffect(() => {
+    if (editingGear && opened) {
+      setFormData({
+        name: editingGear.name,
+        productModel: editingGear.productModel,
+        width: editingGear.dimensions.width,
+        height: editingGear.dimensions.height,
+        category: editingGear.category || 'Other',
+        rackUnits: editingGear.rackUnits,
+        isRack: editingGear.isRack || false,
+        rackCapacity: editingGear.rackCapacity,
+        connections: editingGear.connections || []
+      })
+    } else if (!editingGear && opened) {
+      // Reset form for add mode
+      setFormData({
+        name: '',
+        productModel: '',
+        width: 0.5,
+        height: 0.3,
+        category: 'Other',
+        rackUnits: undefined,
+        isRack: false,
+        rackCapacity: undefined,
+        connections: []
+      })
+    }
+  }, [editingGear, opened])
+
   const [newConnection, setNewConnection] = useState<Partial<Connection>>({
     name: '',
     direction: 'input',
@@ -73,7 +106,11 @@ export function AddGearModal({ opened, onClose, onSubmit }: AddGearModalProps) {
   })
 
   const handleSubmit = () => {
-    onSubmit(formData)
+    if (isEditMode && editingGear && onUpdate) {
+      onUpdate(editingGear.id, formData)
+    } else {
+      onSubmit(formData)
+    }
     handleClose()
   }
 
@@ -138,7 +175,7 @@ export function AddGearModal({ opened, onClose, onSubmit }: AddGearModalProps) {
     <Modal
       opened={opened}
       onClose={handleClose}
-      title="Add Custom Gear"
+      title={isEditMode ? "Edit Custom Gear" : "Add Custom Gear"}
       size="lg"
     >
       <Stack gap="md">
@@ -306,7 +343,7 @@ export function AddGearModal({ opened, onClose, onSubmit }: AddGearModalProps) {
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!isFormValid}>
-            Add Gear
+            {isEditMode ? 'Update Gear' : 'Add Gear'}
           </Button>
         </Group>
       </Stack>
