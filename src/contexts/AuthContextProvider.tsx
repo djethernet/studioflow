@@ -18,6 +18,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const login = async (email: string, password: string): Promise<void> => {
     await signInWithEmailAndPassword(auth, email, password);
@@ -44,9 +45,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  // Check if user is admin via custom claims
+  const checkAdminStatus = async (user: User) => {
+    if (user) {
+      try {
+        const idTokenResult = await user.getIdTokenResult();
+        setIsAdmin(!!idTokenResult.claims.admin);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    } else {
+      setIsAdmin(false);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      await checkAdminStatus(user);
       setLoading(false);
     });
 
@@ -56,6 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value = {
     currentUser,
     loading,
+    isAdmin,
     login,
     signup,
     logout,

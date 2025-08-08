@@ -281,13 +281,21 @@ export async function loadCombinedGear(options: GearQueryOptions = {}): Promise<
 }
 
 /**
- * Add custom gear to user's collection
+ * Add custom gear to user's collection or global collection (if admin)
  */
-export async function addCustomGear(gearData: GearFormData): Promise<string> {
+export async function addCustomGear(gearData: GearFormData, addToGlobal: boolean = false): Promise<string> {
   try {
     const user = auth.currentUser
     if (!user) {
       throw new Error('User not authenticated')
+    }
+
+    // If adding to global, check admin status
+    if (addToGlobal) {
+      const idTokenResult = await user.getIdTokenResult()
+      if (!idTokenResult.claims.admin) {
+        throw new Error('Admin access required to add global gear')
+      }
     }
 
     const newGear: Omit<LibraryItem, 'id'> = {
@@ -302,21 +310,89 @@ export async function addCustomGear(gearData: GearFormData): Promise<string> {
       rackUnits: gearData.rackUnits,
       isRack: gearData.isRack,
       rackCapacity: gearData.isRack ? gearData.rackCapacity : undefined,
-      isOfficial: false,
+      isOfficial: addToGlobal, // Global gear is official
       createdAt: new Date(),
       updatedAt: new Date(),
       tags: []
     }
 
+    // Choose collection based on addToGlobal parameter
+    const targetCollection = addToGlobal 
+      ? GLOBAL_GEAR_COLLECTION 
+      : getUserGearCollection(user.uid)
+
     const docRef = await addDoc(
-      collection(db, getUserGearCollection(user.uid)),
+      collection(db, targetCollection),
       libraryItemToFirestore(newGear)
     )
 
     return docRef.id
   } catch (error) {
-    console.error('Error adding custom gear:', error)
-    throw new Error('Failed to add custom gear')
+    console.error('Error adding gear:', error)
+    throw new Error(`Failed to add ${addToGlobal ? 'global' : 'custom'} gear`)
+  }
+}
+
+/**
+ * Update global gear (admin only)
+ */
+export async function updateGlobalGear(gearId: string, gearData: Partial<GearFormData>): Promise<void> {
+  try {
+    const user = auth.currentUser
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    // Check admin status
+    const idTokenResult = await user.getIdTokenResult()
+    if (!idTokenResult.claims.admin) {
+      throw new Error('Admin access required to update global gear')
+    }
+
+    const updateData: Record<string, unknown> = {
+      updatedAt: Timestamp.now()
+    }
+
+    if (gearData.name) updateData.name = gearData.name
+    if (gearData.productModel) updateData.productModel = gearData.productModel
+    if (gearData.width && gearData.height) {
+      updateData.dimensions = { width: gearData.width, height: gearData.height }
+    }
+    if (gearData.connections) updateData.connections = gearData.connections
+    if (gearData.category) updateData.category = gearData.category
+    if (gearData.rackUnits !== undefined) updateData.rackUnits = gearData.rackUnits
+    if (gearData.isRack !== undefined) {
+      updateData.isRack = gearData.isRack
+      updateData.rackCapacity = gearData.isRack ? gearData.rackCapacity : null
+    }
+
+    await updateDoc(doc(db, GLOBAL_GEAR_COLLECTION, gearId), updateData)
+  } catch (error) {
+    console.error('Error updating global gear:', error)
+    throw new Error('Failed to update global gear')
+  }
+}
+
+/**
+ * Delete global gear (admin only)
+ */
+export async function deleteGlobalGear(gearId: string): Promise<void> {
+  try {
+    const user = auth.currentUser
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    // Check admin status
+    const idTokenResult = await user.getIdTokenResult()
+    if (!idTokenResult.claims.admin) {
+      throw new Error('Admin access required to delete global gear')
+    }
+
+    await deleteDoc(doc(db, GLOBAL_GEAR_COLLECTION, gearId))
+  } catch (error) {
+    console.error('Error deleting global gear:', error)
+    throw new Error('Failed to delete global gear')
   }
 }
 

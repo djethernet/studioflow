@@ -8,8 +8,11 @@ import {
   addCustomGear, 
   updateCustomGear, 
   deleteCustomGear,
+  updateGlobalGear,
+  deleteGlobalGear,
   type GearQueryOptions
 } from '../services/gearService'
+import { auth } from '../config/firebase'
 
 // Default zoom level for canvas (pixels per meter)
 const DEFAULT_CANVAS_ZOOM = 200
@@ -219,23 +222,60 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     try {
       set({ libraryLoading: true })
       
-      await addCustomGear(gearData)
+      // Check if user is admin via Firebase custom claims
+      const user = auth.currentUser
+      let isAdmin = false
+      if (user) {
+        try {
+          const idTokenResult = await user.getIdTokenResult()
+          isAdmin = !!idTokenResult.claims.admin
+        } catch (error) {
+          console.error('Error checking admin status:', error)
+        }
+      }
+      
+      // Add to global collection if admin, user collection otherwise
+      await addCustomGear(gearData, isAdmin)
       
       // Refresh the gear library to include the new item
       await get().refreshGear()
       
-      get().addLogMessage('success', `Custom gear "${gearData.name}" added to library`)
+      const targetCollection = isAdmin ? 'global library' : 'library'
+      get().addLogMessage('success', `Custom gear "${gearData.name}" added to ${targetCollection}`)
     } catch (error) {
-      console.error('Failed to add custom gear:', error)
+      console.error('Failed to add gear:', error)
       set({ libraryLoading: false })
-      get().addLogMessage('error', 'Failed to add custom gear')
+      get().addLogMessage('error', 'Failed to add gear')
       throw error
     }
   },
 
   updateLibraryItem: async (gearId: string, gearData: Partial<GearFormData>) => {
     try {
-      await updateCustomGear(gearId, gearData)
+      // Find the item to determine if it's global or custom
+      const item = get().libraryItems.find(item => item.id === gearId)
+      const isGlobalItem = item?.isOfficial
+      
+      // Check if user is admin for global items
+      const user = auth.currentUser
+      let isAdmin = false
+      if (user && isGlobalItem) {
+        try {
+          const idTokenResult = await user.getIdTokenResult()
+          isAdmin = !!idTokenResult.claims.admin
+        } catch (error) {
+          console.error('Error checking admin status:', error)
+        }
+      }
+      
+      // Use appropriate update function
+      if (isGlobalItem && isAdmin) {
+        await updateGlobalGear(gearId, gearData)
+      } else if (!isGlobalItem) {
+        await updateCustomGear(gearId, gearData)
+      } else {
+        throw new Error('Not authorized to update this gear')
+      }
       
       // Update the item in local state
       set((state) => ({
@@ -250,7 +290,8 @@ export const useStudioStore = create<StudioState>((set, get) => ({
         )
       }))
       
-      get().addLogMessage('success', 'Gear updated successfully')
+      const itemType = isGlobalItem ? 'global' : 'custom'
+      get().addLogMessage('success', `${itemType} gear updated successfully`)
     } catch (error) {
       console.error('Failed to update gear:', error)
       get().addLogMessage('error', 'Failed to update gear')
@@ -260,14 +301,38 @@ export const useStudioStore = create<StudioState>((set, get) => ({
 
   deleteLibraryItem: async (gearId: string) => {
     try {
-      await deleteCustomGear(gearId)
+      // Find the item to determine if it's global or custom
+      const item = get().libraryItems.find(item => item.id === gearId)
+      const isGlobalItem = item?.isOfficial
+      
+      // Check if user is admin for global items
+      const user = auth.currentUser
+      let isAdmin = false
+      if (user && isGlobalItem) {
+        try {
+          const idTokenResult = await user.getIdTokenResult()
+          isAdmin = !!idTokenResult.claims.admin
+        } catch (error) {
+          console.error('Error checking admin status:', error)
+        }
+      }
+      
+      // Use appropriate delete function
+      if (isGlobalItem && isAdmin) {
+        await deleteGlobalGear(gearId)
+      } else if (!isGlobalItem) {
+        await deleteCustomGear(gearId)
+      } else {
+        throw new Error('Not authorized to delete this gear')
+      }
       
       // Remove from local state
       set((state) => ({
         libraryItems: state.libraryItems.filter(item => item.id !== gearId)
       }))
       
-      get().addLogMessage('success', 'Custom gear deleted')
+      const itemType = isGlobalItem ? 'global' : 'custom'
+      get().addLogMessage('success', `${itemType} gear deleted`)
     } catch (error) {
       console.error('Failed to delete gear:', error)
       get().addLogMessage('error', 'Failed to delete gear')

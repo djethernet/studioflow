@@ -4,6 +4,7 @@ import { IconPlus, IconAlertCircle, IconDots, IconEdit, IconTrash } from '@table
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
 import { AddGearModal, type GearFormData } from './AddGearModal'
+import { useAuth } from '../hooks/useAuth'
 import type { LibraryItem } from '../types/StudioItem'
 
 const CATEGORIES = [
@@ -18,6 +19,7 @@ const CATEGORIES = [
 ]
 
 export function LibraryPanel() {
+  const { isAdmin } = useAuth()
   const { 
     selectedLibraryItem, 
     searchQuery, 
@@ -259,10 +261,15 @@ export function LibraryPanel() {
                   <Badge variant="light" color="teal" size="xs">
                     {item.category || 'Equipment'}
                   </Badge>
+                  {isAdmin && !item.isOfficial && (
+                    <Badge variant="filled" color="orange" size="xs">
+                      CUSTOM
+                    </Badge>
+                  )}
                   <Text size="sm" fw={500} style={{ flex: 1 }}>
                     {item.name}
                   </Text>
-                  {!item.isOfficial && (
+                  {(!item.isOfficial || isAdmin) && (
                     <Menu shadow="md" width={120}>
                       <Menu.Target>
                         <ActionIcon
@@ -356,6 +363,7 @@ export function LibraryPanel() {
         onSubmit={handleAddGear}
         editingGear={editingGear || undefined}
         onUpdate={handleEditGear}
+        isAdmin={isAdmin}
       />
 
       <Modal

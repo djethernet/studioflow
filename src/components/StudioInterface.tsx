@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Tabs, Button, Group, Text, LoadingOverlay, Alert } from '@mantine/core'
+import { Tabs, Button, Group, Text, LoadingOverlay, Alert, Badge } from '@mantine/core'
 import { IconArrowLeft, IconAlertCircle, IconCheck } from '@tabler/icons-react'
 import { LibraryPanel } from './LibraryPanel'
 import { Canvas } from './Canvas'
@@ -17,7 +17,7 @@ import classes from '../css/HeaderTabs.module.css';
 export const StudioInterface = () => {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
-  const { currentUser } = useAuth()
+  const { currentUser, isAdmin } = useAuth()
   const { exportStudioData, importStudioData, resetStudioData } = useStudioStore()
   const [activeTab, setActiveTab] = useState<string | null>('layout')
   const [project, setProject] = useState<Project | null>(null)
@@ -131,7 +131,14 @@ export const StudioInterface = () => {
             >
               Projects
             </Button>
-            <Text fw={500} size="lg">{project.name}</Text>
+            <Group gap="xs">
+              <Text fw={500} size="lg">{project.name}</Text>
+              {isAdmin && (
+                <Badge size="sm" color="red" variant="filled">
+                  ADMIN
+                </Badge>
+              )}
+            </Group>
           </Group>
           <Button 
             onClick={handleSaveProject} 

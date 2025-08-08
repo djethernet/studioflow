@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Modal, TextInput, NumberInput, Select, Checkbox, Button, Stack, Group, Divider, Text, Paper, ActionIcon, Box, SegmentedControl } from '@mantine/core'
+import { Modal, TextInput, NumberInput, Select, Checkbox, Button, Stack, Group, Divider, Text, Paper, ActionIcon, Box, SegmentedControl, Badge } from '@mantine/core'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 import type { Connection, LibraryItem } from '../types/StudioItem'
 
@@ -9,6 +9,7 @@ interface AddGearModalProps {
   onSubmit: (gearData: GearFormData) => void
   editingGear?: LibraryItem
   onUpdate?: (gearId: string, gearData: Partial<GearFormData>) => void
+  isAdmin?: boolean
 }
 
 export interface GearFormData {
@@ -53,7 +54,7 @@ const CONNECTION_CATEGORIES = [
   'control'
 ]
 
-export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate }: AddGearModalProps) {
+export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate, isAdmin }: AddGearModalProps) {
   const isEditMode = Boolean(editingGear)
   const [formData, setFormData] = useState<GearFormData>({
     name: '',
@@ -175,7 +176,16 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate 
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={isEditMode ? "Edit Custom Gear" : "Add Custom Gear"}
+      title={
+        <Group gap="xs">
+          <Text>{isEditMode ? "Edit Custom Gear" : "Add Custom Gear"}</Text>
+          {isAdmin && (
+            <Badge size="sm" color="red" variant="filled">
+              ADMIN - Adding to Global Library
+            </Badge>
+          )}
+        </Group>
+      }
       size="lg"
     >
       <Stack gap="md">
