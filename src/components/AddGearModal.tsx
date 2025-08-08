@@ -213,6 +213,7 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
             max={5.0}
             step={0.01}
             decimalScale={2}
+            hideControls
             required
             value={formData.width}
             onChange={(value) => setFormData(prev => ({ ...prev, width: (value as number) || 0.5 }))}
@@ -224,6 +225,7 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
             max={5.0}
             step={0.01}
             decimalScale={2}
+            hideControls
             required
             value={formData.height}
             onChange={(value) => setFormData(prev => ({ ...prev, height: (value as number) || 0.3 }))}
@@ -243,6 +245,7 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
           placeholder="e.g., 1 for 1U equipment"
           min={1}
           max={12}
+          hideControls
           value={formData.rackUnits}
           onChange={(value) => setFormData(prev => ({ ...prev, rackUnits: (value as number) || undefined }))}
         />
@@ -259,6 +262,7 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate,
             placeholder="e.g., 12 for 12U rack"
             min={1}
             max={48}
+            hideControls
             required
             value={formData.rackCapacity}
             onChange={(value) => setFormData(prev => ({ ...prev, rackCapacity: (value as number) || undefined }))}
