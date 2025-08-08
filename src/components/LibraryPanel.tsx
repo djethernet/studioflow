@@ -1,20 +1,70 @@
-import { useState } from 'react'
-import { Box, Text, TextInput, ScrollArea, Stack, Paper } from '@mantine/core'
+import { useState, useEffect, useCallback } from 'react'
+import { Box, Text, TextInput, ScrollArea, Stack, Paper, Button, Group, Loader, Alert, Select, Badge, ActionIcon, Menu, Modal } from '@mantine/core'
+import { IconPlus, IconRefresh, IconAlertCircle, IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
 import { useStudioStore } from '../stores/studioStore'
 import { PropertiesPanel } from './PropertiesPanel'
+import { AddGearModal, type GearFormData } from './AddGearModal'
 import type { LibraryItem } from '../types/StudioItem'
+
+const CATEGORIES = [
+  'All Categories',
+  'Interface',
+  'Mixer', 
+  'Speakers',
+  'Synth',
+  'Processor',
+  'Rack',
+  'Other'
+]
 
 export function LibraryPanel() {
   const { 
     selectedLibraryItem, 
     searchQuery, 
+    categoryFilter,
+    libraryItems,
+    libraryLoading,
+    libraryError,
+    libraryHasMore,
     setSelectedLibraryItem, 
-    setSearchQuery, 
-    getFilteredLibraryItems 
+    setSearchQuery,
+    setCategoryFilter,
+    loadGear,
+    loadMoreGear,
+    refreshGear,
+    addLibraryItem,
+    updateLibraryItem,
+    deleteLibraryItem,
+    getFilteredLibraryItems
   } = useStudioStore()
   
   const [splitHeight, setSplitHeight] = useState(60) // Percentage for gear list
+  const [addModalOpened, setAddModalOpened] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [editingGear, setEditingGear] = useState<LibraryItem | null>(null)
+  const [deleteModalOpened, setDeleteModalOpened] = useState(false)
+  const [gearToDelete, setGearToDelete] = useState<LibraryItem | null>(null)
   const filteredItems = getFilteredLibraryItems()
+
+  // Load gear on component mount
+  useEffect(() => {
+    if (libraryItems.length === 0 && !libraryLoading) {
+      loadGear()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Reload when search or category changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery || categoryFilter) {
+        loadGear()
+      }
+    }, 300) // Debounce search
+
+    return () => clearTimeout(timeoutId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, categoryFilter])
 
   const handleItemClick = (item: LibraryItem) => {
     setSelectedLibraryItem(item)
@@ -24,6 +74,87 @@ export function LibraryPanel() {
     e.dataTransfer.setData('application/json', JSON.stringify(item))
     e.dataTransfer.effectAllowed = 'copy'
   }
+
+  const handleAddGear = async (gearData: GearFormData) => {
+    try {
+      await addLibraryItem(gearData)
+      setAddModalOpened(false)
+    } catch (error) {
+      // Error is already handled in the store and logged
+      console.error('Failed to add gear:', error)
+    }
+  }
+
+  const handleEditGear = async (gearId: string, gearData: Partial<GearFormData>) => {
+    try {
+      await updateLibraryItem(gearId, gearData)
+      setEditingGear(null)
+      setAddModalOpened(false)
+    } catch (error) {
+      console.error('Failed to update gear:', error)
+    }
+  }
+
+  const handleDeleteGear = async () => {
+    if (!gearToDelete) return
+    
+    try {
+      await deleteLibraryItem(gearToDelete.id)
+      setDeleteModalOpened(false)
+      setGearToDelete(null)
+      // Clear selection if deleted item was selected
+      if (selectedLibraryItem?.id === gearToDelete.id) {
+        setSelectedLibraryItem(null)
+      }
+    } catch (error) {
+      console.error('Failed to delete gear:', error)
+    }
+  }
+
+  const openEditModal = (gear: LibraryItem) => {
+    setEditingGear(gear)
+    setAddModalOpened(true)
+  }
+
+  const openDeleteModal = (gear: LibraryItem) => {
+    setGearToDelete(gear)
+    setDeleteModalOpened(true)
+  }
+
+  const closeAddModal = () => {
+    setAddModalOpened(false)
+    setEditingGear(null)
+  }
+
+  const handleCategoryChange = (category: string | null) => {
+    setCategoryFilter(category === 'All Categories' ? '' : category || '')
+  }
+
+  const handleRefresh = () => {
+    refreshGear()
+  }
+
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMore || !libraryHasMore) return
+    
+    setIsLoadingMore(true)
+    try {
+      await loadMoreGear()
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [isLoadingMore, libraryHasMore, loadMoreGear])
+
+  // Handle scroll for infinite loading
+  const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget
+    const { scrollTop, scrollHeight, clientHeight } = element
+    
+    // Load more when scrolled to bottom (with 100px threshold)
+    if (scrollHeight - scrollTop - clientHeight < 100 && libraryHasMore && !libraryLoading && !isLoadingMore) {
+      handleLoadMore()
+    }
+  }, [handleLoadMore, libraryHasMore, libraryLoading, isLoadingMore])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     const startY = e.clientY
@@ -60,16 +191,69 @@ export function LibraryPanel() {
         }}
       >
         <Box mb="sm">
-           <Text fw={700} size="lg" mb="sm">Catalog</Text>
-          <TextInput
-            placeholder="Search gear..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <Group justify="space-between" mb="sm">
+            <Group>
+              <Text fw={700} size="lg">Catalog</Text>
+              <Badge size="sm" color="blue">{filteredItems.length}</Badge>
+            </Group>
+            <Group gap="xs">
+              <Button
+                leftSection={<IconRefresh size={14} />}
+                size="xs"
+                variant="light"
+                onClick={handleRefresh}
+                loading={libraryLoading}
+              >
+                Refresh
+              </Button>
+              <Button
+                leftSection={<IconPlus size={16} />}
+                size="xs"
+                onClick={() => setAddModalOpened(true)}
+              >
+                Add Gear
+              </Button>
+            </Group>
+          </Group>
+          
+          <Stack gap="xs">
+            <TextInput
+              placeholder="Search gear..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Select
+              placeholder="Filter by category"
+              data={CATEGORIES}
+              value={categoryFilter || 'All Categories'}
+              onChange={handleCategoryChange}
+            />
+          </Stack>
         </Box>
         
-        <ScrollArea style={{ flex: 1 }}>
+        {libraryError && (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            color="red" 
+            mb="sm"
+            variant="light"
+          >
+            {libraryError}
+          </Alert>
+        )}
+        
+        <ScrollArea 
+          style={{ flex: 1 }} 
+          onScrollCapture={handleScroll}
+        >
           <Stack gap="xs">
+            {libraryLoading && filteredItems.length === 0 && (
+              <Group justify="center" py="xl">
+                <Loader size="sm" />
+                <Text size="sm" c="dimmed">Loading gear...</Text>
+              </Group>
+            )}
+            
             {filteredItems.map((item) => (
               <Paper
                 key={item.id}
@@ -80,9 +264,78 @@ export function LibraryPanel() {
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
               >
-                <Text size="sm" fw={500}>{item.name}</Text>
+                <Group justify="space-between">
+                  <Box style={{ flex: 1 }}>
+                    <Group justify="space-between">
+                      <Text size="sm" fw={500}>{item.name}</Text>
+                      <Group gap="xs">
+                        {!item.isOfficial && (
+                          <Badge size="xs" color="green">Custom</Badge>
+                        )}
+                        {!item.isOfficial && (
+                          <Menu shadow="md" width={120}>
+                            <Menu.Target>
+                              <ActionIcon
+                                size="sm"
+                                variant="subtle"
+                                onClick={(e) => {
+                                  e.stopPropagation() // Prevent item selection
+                                }}
+                              >
+                                <IconDots size={14} />
+                              </ActionIcon>
+                            </Menu.Target>
+                            <Menu.Dropdown>
+                              <Menu.Item
+                                leftSection={<IconEdit size={14} />}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openEditModal(item)
+                                }}
+                              >
+                                Edit
+                              </Menu.Item>
+                              <Menu.Item
+                                leftSection={<IconTrash size={14} />}
+                                color="red"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openDeleteModal(item)
+                                }}
+                              >
+                                Delete
+                              </Menu.Item>
+                            </Menu.Dropdown>
+                          </Menu>
+                        )}
+                      </Group>
+                    </Group>
+                    {item.category && (
+                      <Text size="xs" c="dimmed">{item.category}</Text>
+                    )}
+                  </Box>
+                </Group>
               </Paper>
             ))}
+            
+            {isLoadingMore && (
+              <Group justify="center" py="sm">
+                <Loader size="sm" />
+                <Text size="xs" c="dimmed">Loading more...</Text>
+              </Group>
+            )}
+            
+            {!libraryHasMore && filteredItems.length > 0 && (
+              <Text size="xs" c="dimmed" ta="center" py="sm">
+                All gear loaded
+              </Text>
+            )}
+            
+            {!libraryLoading && filteredItems.length === 0 && !libraryError && (
+              <Text size="sm" c="dimmed" ta="center" py="xl">
+                {searchQuery || categoryFilter ? 'No gear matches your filters' : 'No gear available'}
+              </Text>
+            )}
           </Stack>
         </ScrollArea>
       </Paper>
@@ -115,6 +368,44 @@ export function LibraryPanel() {
           allowNameEditing={false}
         />
       </Paper>
+
+      <AddGearModal
+        opened={addModalOpened}
+        onClose={closeAddModal}
+        onSubmit={handleAddGear}
+        editingGear={editingGear || undefined}
+        onUpdate={handleEditGear}
+      />
+
+      <Modal
+        opened={deleteModalOpened}
+        onClose={() => {
+          setDeleteModalOpened(false)
+          setGearToDelete(null)
+        }}
+        title="Delete Custom Gear"
+        centered
+      >
+        <Stack gap="md">
+          <Text>
+            Are you sure you want to delete "{gearToDelete?.name}"? This action cannot be undone.
+          </Text>
+          <Group justify="flex-end">
+            <Button
+              variant="light"
+              onClick={() => {
+                setDeleteModalOpened(false)
+                setGearToDelete(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button color="red" onClick={handleDeleteGear}>
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </div>
   )
 }

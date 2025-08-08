@@ -20,7 +20,7 @@ export interface Position {
 
 // Library template - the gear definition from the library
 export interface LibraryItem {
-  id: number
+  id: string                  // Firestore document ID
   name: string
   productModel: string        // Manufacturer and model (e.g., "SSL Matrix 2")
   dimensions: Dimensions
@@ -30,13 +30,19 @@ export interface LibraryItem {
   rackUnits?: number          // Height in rack units (1U = 1.75"). 0 or undefined = not rack-mountable
   isRack?: boolean            // True if this item IS a rack that can hold other equipment
   rackCapacity?: number       // Number of rack units this rack can hold (only for isRack: true)
+  
+  // Firebase metadata
+  isOfficial?: boolean        // True for global/official gear, false for user custom gear
+  createdAt?: Date           // Creation timestamp
+  updatedAt?: Date           // Last updated timestamp
+  tags?: string[]            // Search/filter tags
 }
 
 // Studio item - an instance of gear in the studio project
 export interface StudioItem {
   // Instance identification
   id: string                    // Unique instance ID (UUID)
-  libraryItemId: number        // Reference to original library template
+  libraryItemId: string        // Reference to original library template (Firestore ID)
   
   // Library data (copied for quick access)
   name: string                 // User-editable name (e.g., "Mixer 1")
