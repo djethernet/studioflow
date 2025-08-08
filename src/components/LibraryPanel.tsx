@@ -311,11 +311,6 @@ export function LibraryPanel() {
               </Group>
             )}
             
-            {!libraryHasMore && filteredItems.length > 0 && (
-              <Text size="xs" c="dimmed" ta="center" py="sm">
-                All gear loaded
-              </Text>
-            )}
             
             {!libraryLoading && filteredItems.length === 0 && !libraryError && (
               <Text size="sm" c="dimmed" ta="center" py="xl">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Modal, TextInput, NumberInput, Select, Checkbox, Button, Stack, Group, Divider, Text, Paper, ActionIcon, Box } from '@mantine/core'
+import { Modal, TextInput, NumberInput, Select, Checkbox, Button, Stack, Group, Divider, Text, Paper, ActionIcon, Box, SegmentedControl } from '@mantine/core'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 import type { Connection, LibraryItem } from '../types/StudioItem'
 
@@ -265,38 +265,46 @@ export function AddGearModal({ opened, onClose, onSubmit, editingGear, onUpdate 
               value={newConnection.name}
               onChange={(e) => setNewConnection(prev => ({ ...prev, name: e.target.value }))}
             />
+            <Group>
+              <Box style={{ flex: 1 }}>
+                <Text size="xs" fw={500} mb={4}>Direction</Text>
+                <SegmentedControl
+                  fullWidth
+                  data={[
+                    { value: 'input', label: 'Input' },
+                    { value: 'output', label: 'Output' }
+                  ]}
+                  value={newConnection.direction || 'input'}
+                  onChange={(value) => setNewConnection(prev => ({ ...prev, direction: value as 'input' | 'output' }))}
+                />
+              </Box>
+              <Box style={{ flex: 1 }}>
+                <Text size="xs" fw={500} mb={4}>Port Type</Text>
+                <SegmentedControl
+                  fullWidth
+                  data={[
+                    { value: 'socket', label: 'Socket' },
+                    { value: 'plug', label: 'Plug' }
+                  ]}
+                  value={newConnection.way || 'socket'}
+                  onChange={(value) => setNewConnection(prev => ({ ...prev, way: value as 'plug' | 'socket' }))}
+                />
+              </Box>
+            </Group>
             <Group grow>
               <Select
-                placeholder="Direction"
-                data={[
-                  { value: 'input', label: 'Input' },
-                  { value: 'output', label: 'Output' }
-                ]}
-                value={newConnection.direction}
-                onChange={(value) => setNewConnection(prev => ({ ...prev, direction: value as 'input' | 'output' }))}
-              />
-              <Select
-                placeholder="Physical connector"
+                label="Physical Connector"
+                placeholder="Select connector type"
                 data={CONNECTION_TYPES}
                 value={newConnection.physical}
                 onChange={(value) => setNewConnection(prev => ({ ...prev, physical: value as Connection['physical'] }))}
               />
-            </Group>
-            <Group grow>
               <Select
-                placeholder="Category"
+                label="Signal Category"
+                placeholder="Select signal type"
                 data={CONNECTION_CATEGORIES}
                 value={newConnection.category}
                 onChange={(value) => setNewConnection(prev => ({ ...prev, category: value as Connection['category'] }))}
-              />
-              <Select
-                placeholder="Port type"
-                data={[
-                  { value: 'socket', label: 'Socket (Female)' },
-                  { value: 'plug', label: 'Plug (Male)' }
-                ]}
-                value={newConnection.way}
-                onChange={(value) => setNewConnection(prev => ({ ...prev, way: value as 'plug' | 'socket' }))}
               />
             </Group>
             <Button
