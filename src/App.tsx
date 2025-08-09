@@ -6,6 +6,7 @@ import { ResetPasswordPage } from './components/Auth/ResetPasswordPage'
 import { ProjectsPage } from './components/Projects/ProjectsPage'
 import { StudioInterface } from './components/StudioInterface'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { LandingPage } from './components/LandingPage/LandingPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Router>
         <Routes>
           {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -29,11 +31,8 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/projects" replace />} />
-          
           {/* Catch all route */}
-          <Route path="*" element={<Navigate to="/projects" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
